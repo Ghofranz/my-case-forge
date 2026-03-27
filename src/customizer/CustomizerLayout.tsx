@@ -52,7 +52,7 @@ export default function CustomizerLayout() {
           <div className="flex gap-2">
             <button onClick={fabricApi.undo} disabled={!canUndo} className="px-4 py-2 bg-[#161616] border border-[#2A2A2A] text-white text-[10px] font-bold uppercase rounded-lg hover:border-[#C6FF00] disabled:opacity-30 transition-colors">Undo</button>
             <button onClick={fabricApi.redo} disabled={!canRedo} className="px-4 py-2 bg-[#161616] border border-[#2A2A2A] text-white text-[10px] font-bold uppercase rounded-lg hover:border-[#C6FF00] disabled:opacity-30 transition-colors">Redo</button>
-            <button onClick={() => { fabricApi.fabricRef.current?.clear(); fabricApi.fabricRef.current?.setBackgroundColor('#C6FF00', () => {}); fabricApi.fabricRef.current?.requestRenderAll(); }} className="px-4 py-2 bg-red-900/20 text-red-500 border border-red-900 text-[10px] uppercase font-bold rounded-lg hover:bg-red-900/40 transition-colors ml-4">Clear All</button>
+            <button onClick={() => { fabricApi.fabricRef.current?.clear(); fabricApi.setBackgroundColor('#C6FF00'); }} className="px-4 py-2 bg-red-900/20 text-red-500 border border-red-900 text-[10px] uppercase font-bold rounded-lg hover:bg-red-900/40 transition-colors ml-4">Clear All</button>
           </div>
           <div className="flex items-center gap-2 pr-2">
             <span className="w-2 h-2 rounded-full bg-[#C6FF00] shadow-[0_0_8px_#C6FF00]"></span>
