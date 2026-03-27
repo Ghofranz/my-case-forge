@@ -3,10 +3,8 @@ import * as fabric from 'fabric';
 import { v4 as uuidv4 } from 'uuid';
 import { useCustomizerStore, LayerItem } from '../store/useCustomizerStore';
 
-// Monkey patch Fabric's object model loosely to allow custom IDs if needed, though we can just use set()
-export const preloadFont = (fontFamily: string): Promise<void> => {
-  return document.fonts.load(`16px "${fontFamily}"`).then(() => {});
-};
+export const preloadFont = (fontFamily: string): Promise<void> =>
+  document.fonts.load(`16px "${fontFamily}"`).then(() => {});
 
 export const useFabric = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -16,121 +14,104 @@ export const useFabric = () => {
   const historyIndexRef = useRef(-1);
   const isHistoryProcessing = useRef(false);
 
-  // Initialize Canvas
   useEffect(() => {
     if (!canvasRef.current || typeof window === 'undefined') return;
 
+    // Fabric v6: pass width/height explicitly
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: 300,
       height: 620,
       backgroundColor: '#C6FF00',
-      preserveObjectStacking: true, // Keep standard z-index ordering
+      preserveObjectStacking: true,
     });
     fabricRef.current = canvas;
 
-    const saveHistory = () => {
-      if (isHistoryProcessing.current) return;
-      const json = canvas.toJSON();
-      // Truncate future history if we modified after an undo
-      if (historyIndexRef.current < historyRef.current.length - 1) {
-        historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-      }
-      historyRef.current.push(JSON.stringify(json));
-      if (historyRef.current.length > 50) historyRef.current.shift();
-      else historyIndexRef.current++;
-      
-      updateLayerState();
-      syncStoreHistory();
-    };
-
-    const updateLayerState = () => {
+    const syncLayers = () => {
       const objects = canvas.getObjects();
       const newLayers: LayerItem[] = objects.map((obj) => ({
-        id: (obj as any).id || uuidv4(),
-        type: obj.type || 'object',
-        name: (obj as any).name || (obj.type === 'i-text' ? 'Text Layer' : 'Layer'),
-        locked: !obj.selectable,
-        opacity: obj.opacity || 1,
-      })).reverse(); // top layers first
+        id: (obj as any).id ?? uuidv4(),
+        type: obj.type ?? 'object',
+        name: (obj as any).name ?? (obj.type === 'i-text' ? 'Text Layer' : 'Layer'),
+        locked: !(obj as any).selectable,
+        opacity: (obj as any).opacity ?? 1,
+        visible: (obj as any).visible ?? true,
+      })).reverse();
       setLayers(newLayers);
     };
 
-    const syncStoreHistory = () => {
+    const saveHistory = () => {
+      if (isHistoryProcessing.current) return;
+      const snapshot = JSON.stringify(canvas.toJSON(['id', 'name']));
+      // Truncate forward history on new action
+      historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+      historyRef.current.push(snapshot);
+      if (historyRef.current.length > 50) historyRef.current.shift();
+      else historyIndexRef.current++;
+      syncLayers();
       setCanUndo(historyIndexRef.current > 0);
-      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+      setCanRedo(false);
     };
 
     canvas.on('object:added', saveHistory);
     canvas.on('object:modified', saveHistory);
     canvas.on('object:removed', saveHistory);
-    
+
     canvas.on('after:render', () => {
       window.dispatchEvent(new Event('fabric-sync'));
     });
-    
-    // Initial state
-    canvas.clear();
-    saveHistory();
+
+    // Save initial empty state
+    historyRef.current = [JSON.stringify(canvas.toJSON(['id', 'name']))];
+    historyIndexRef.current = 0;
 
     return () => {
       canvas.dispose();
       fabricRef.current = null;
     };
-  }, []);
+  }, [setLayers, setCanUndo, setCanRedo]);
+
+  const restoreSnapshot = useCallback(async (snapshot: string) => {
+    if (!fabricRef.current) return;
+    isHistoryProcessing.current = true;
+    await fabricRef.current.loadFromJSON(JSON.parse(snapshot));
+    fabricRef.current.renderAll();
+    isHistoryProcessing.current = false;
+
+    const objects = fabricRef.current.getObjects();
+    setLayers(
+      objects.map((obj) => ({
+        id: (obj as any).id ?? uuidv4(),
+        type: obj.type ?? 'object',
+        name: (obj as any).name ?? 'Layer',
+        locked: !(obj as any).selectable,
+        opacity: (obj as any).opacity ?? 1,
+        visible: (obj as any).visible ?? true,
+      })).reverse()
+    );
+    setCanUndo(historyIndexRef.current > 0);
+    setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+  }, [setLayers, setCanUndo, setCanRedo]);
 
   const undo = useCallback(async () => {
-    if (historyIndexRef.current > 0 && fabricRef.current) {
-      isHistoryProcessing.current = true;
+    if (historyIndexRef.current > 0) {
       historyIndexRef.current--;
-      const json = JSON.parse(historyRef.current[historyIndexRef.current]);
-      await fabricRef.current.loadFromJSON(json);
-      fabricRef.current.renderAll();
-      isHistoryProcessing.current = false;
-      setLayers([]); // re-trigger update if needed, but saveHistory won't fire. Let's force it:
-      
-      const objects = fabricRef.current.getObjects();
-      setLayers(objects.map((obj) => ({
-        id: (obj as any).id || uuidv4(),
-        type: obj.type || 'object',
-        name: (obj as any).name || 'Layer',
-        locked: !obj.selectable,
-        opacity: obj.opacity || 1,
-      })).reverse());
-      
-      setCanUndo(historyIndexRef.current > 0);
-      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+      await restoreSnapshot(historyRef.current[historyIndexRef.current]);
     }
-  }, [setLayers, setCanUndo, setCanRedo]);
+  }, [restoreSnapshot]);
 
   const redo = useCallback(async () => {
-    if (historyIndexRef.current < historyRef.current.length - 1 && fabricRef.current) {
-      isHistoryProcessing.current = true;
+    if (historyIndexRef.current < historyRef.current.length - 1) {
       historyIndexRef.current++;
-      const json = JSON.parse(historyRef.current[historyIndexRef.current]);
-      await fabricRef.current.loadFromJSON(json);
-      fabricRef.current.renderAll();
-      isHistoryProcessing.current = false;
-      
-      const objects = fabricRef.current.getObjects();
-      setLayers(objects.map((obj) => ({
-        id: (obj as any).id || uuidv4(),
-        type: obj.type || 'object',
-        name: (obj as any).name || 'Layer',
-        locked: !obj.selectable,
-        opacity: obj.opacity || 1,
-      })).reverse());
-      
-      setCanUndo(historyIndexRef.current > 0);
-      setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+      await restoreSnapshot(historyRef.current[historyIndexRef.current]);
     }
-  }, [setLayers, setCanUndo, setCanRedo]);
+  }, [restoreSnapshot]);
 
   const addText = useCallback(async (textStr: string, font: string, color: string) => {
     if (!fabricRef.current) return;
     await preloadFont(font);
     const text = new fabric.IText(textStr, {
-      left: 100,
-      top: 100,
+      left: 60,
+      top: 200,
       fontFamily: font,
       fill: color,
       fontSize: 40,
@@ -139,6 +120,7 @@ export const useFabric = () => {
     (text as any).name = `Text: ${textStr.substring(0, 10)}`;
     fabricRef.current.add(text);
     fabricRef.current.setActiveObject(text);
+    fabricRef.current.requestRenderAll();
   }, []);
 
   const addImage = useCallback((file: File) => {
@@ -146,13 +128,15 @@ export const useFabric = () => {
     const reader = new FileReader();
     reader.onload = (f) => {
       const data = f.target?.result as string;
-      fabric.Image.fromURL(data).then((img) => {
+      // Fabric v6: fromURL returns a Promise
+      fabric.FabricImage.fromURL(data).then((img) => {
         img.scaleToWidth(200);
-        img.set({ left: 100, top: 100 });
+        img.set({ left: 50, top: 100 });
         (img as any).id = uuidv4();
         (img as any).name = 'Uploaded Image';
         fabricRef.current?.add(img);
         fabricRef.current?.setActiveObject(img);
+        fabricRef.current?.requestRenderAll();
       });
     };
     reader.readAsDataURL(file);
@@ -160,39 +144,33 @@ export const useFabric = () => {
 
   const addStickerEmoji = useCallback((emoji: string) => {
     if (!fabricRef.current) return;
-    const text = new fabric.Text(emoji, {
-      left: 150,
-      top: 300,
+    const text = new fabric.FabricText(emoji, {
+      left: 100,
+      top: 250,
       fontSize: 64,
     });
     (text as any).id = uuidv4();
     (text as any).name = `Sticker ${emoji}`;
     fabricRef.current.add(text);
     fabricRef.current.setActiveObject(text);
-  }, []);
-
-  const addStickerSVG = useCallback(async (svgString: string, name: string) => {
-    if (!fabricRef.current) return;
-    const { objects, options } = await fabric.loadSVGFromString(svgString);
-    const validObjects = objects.filter((o): o is fabric.FabricObject => o !== null);
-    const obj = fabric.util.groupSVGElements(validObjects, options);
-    obj.set({ left: 150, top: 300 });
-    obj.scaleToWidth(64);
-    (obj as any).id = uuidv4();
-    (obj as any).name = name;
-    fabricRef.current.add(obj);
-    fabricRef.current.setActiveObject(obj);
-  }, []);
-  
-  const setBackgroundColor = useCallback((color: string) => {
-    if (!fabricRef.current) return;
-    fabricRef.current.backgroundColor = color;
-    // We add a dummy hidden object so background change registers in history cleanly
-    const dummy = new fabric.Rect({ width: 0, height: 0, opacity: 0 });
-    fabricRef.current.add(dummy);
-    fabricRef.current.remove(dummy);
     fabricRef.current.requestRenderAll();
   }, []);
+
+  const setBackgroundColor = useCallback((color: string) => {
+    if (!fabricRef.current) return;
+    // Directly set background — no dummy object (avoids history loop)
+    fabricRef.current.set('backgroundColor', color);
+    fabricRef.current.requestRenderAll();
+
+    // Manually snapshot for undo
+    if (isHistoryProcessing.current) return;
+    const snapshot = JSON.stringify(fabricRef.current.toJSON(['id', 'name']));
+    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+    historyRef.current.push(snapshot);
+    if (historyRef.current.length <= 50) historyIndexRef.current++;
+    setCanUndo(historyIndexRef.current > 0);
+    setCanRedo(false);
+  }, [setCanUndo, setCanRedo]);
 
   return {
     canvasRef,
@@ -202,7 +180,6 @@ export const useFabric = () => {
     addText,
     addImage,
     addStickerEmoji,
-    addStickerSVG,
     setBackgroundColor,
   };
 };

@@ -4,55 +4,81 @@ interface Props {
   model: string;
 }
 
-export default function PhoneCaseSVG({ model }: Props) {
-  // A perfect 300x620 Silhouette with a Reverse Mask to occlude the canvas bleed natively.
-  // The canvas underneath fills the whole 300x620 square, but only the phone silhouette is visible.
-
+export default function PhoneCaseSVG({ model: _model }: Props) {
   return (
-    <svg 
-      className="absolute inset-0 pointer-events-none z-20" 
-      viewBox="0 0 300 620" 
-      width="300" height="620" 
+    <svg
+      className="absolute inset-0 pointer-events-none"
+      viewBox="0 0 300 620"
+      width="300"
+      height="620"
       xmlns="http://www.w3.org/2000/svg"
+      style={{ zIndex: 20 }}
     >
       <defs>
-        <mask id="phone-mask">
-          <rect width="300" height="620" fill="white" />
-          <rect x="0" y="0" width="300" height="620" rx="42" fill="black" />
-        </mask>
+        {/*
+          clipPath so the canvas (which is a sibling, not inside the SVG)
+          stays within the phone shape. The actual canvas clipping is done
+          via borderRadius: 42 on the canvas element itself in CSS.
+        */}
       </defs>
 
-      {/* Exterior Occlusion (hides anything outside the rounded phone border) */}
-      {/* Same color as the center panel background to blend perfectly (#13131a) -> wait I'll set it to transparent via CSS drop-shadow instead if possible, but matching works. I will use #13131A */}
-      <rect width="300" height="620" fill="#13131a" mask="url(#phone-mask)" />
-      
-      {/* Outer Case Border Highlight */}
-      <rect x="0" y="0" width="300" height="620" rx="42" fill="none" stroke="#2A2A2A" strokeWidth="2" />
+      {/* ── Rounded border highlight ── */}
+      <rect
+        x="1" y="1" width="298" height="618"
+        rx="41" ry="41"
+        fill="none"
+        stroke="#3a3a3a"
+        strokeWidth="2"
+      />
+      {/* Inner subtle edge sheen */}
+      <rect
+        x="3" y="3" width="294" height="614"
+        rx="39" ry="39"
+        fill="none"
+        stroke="rgba(255,255,255,0.04)"
+        strokeWidth="1"
+      />
 
-      {/* Inner Screen/Hardware Overlays */}
-      
-      {/* Dynamic island (Front slot) */}
-      <rect x="105" y="15" width="90" height="15" rx="7.5" fill="#0A0A0A" />
+      {/* ── Dynamic Island ── */}
+      <rect x="100" y="14" width="100" height="17" rx="8.5" fill="#0A0A0A" />
 
-      {/* Camera Island Bump (Back surface representation) */}
-      <g className="opacity-90 transition-opacity hover:opacity-100">
-        <rect x="15" y="15" width="105" height="110" rx="22" fill="#050505" fillOpacity="0.8" stroke="#333" strokeWidth="1" />
-        {/* Lenses */}
-        <circle cx="40" cy="45" r="14" fill="#000" stroke="#222" strokeWidth="2" />
-        <circle cx="40" cy="85" r="14" fill="#000" stroke="#222" strokeWidth="2" />
-        <circle cx="85" cy="65" r="14" fill="#000" stroke="#222" strokeWidth="2" />
-        <text x="67" y="112" fill="#666" fontSize="7" textAnchor="middle" fontWeight="bold" letterSpacing={1}>CAMERA</text>
-      </g>
+      {/* ── Camera island ── */}
+      <rect x="14" y="18" width="108" height="108" rx="22" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
+      {/* Lens rings */}
+      <circle cx="38" cy="47" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
+      <circle cx="38" cy="47" r="9" fill="#000" stroke="#111" strokeWidth="1" />
+      <circle cx="38" cy="89" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
+      <circle cx="38" cy="89" r="9" fill="#000" stroke="#111" strokeWidth="1" />
+      <circle cx="82" cy="68" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
+      <circle cx="82" cy="68" r="9" fill="#000" stroke="#111" strokeWidth="1" />
+      {/* LiDAR / flash dot */}
+      <circle cx="96" cy="26" r="5" fill="#111" stroke="#222" strokeWidth="1" />
+      <text x="68" y="116" fill="#444" fontSize="6.5" textAnchor="middle" fontWeight="bold" letterSpacing="1">
+        CAMERA
+      </text>
 
-      {/* Bottom Charging Port */}
-      <rect x="120" y="605" width="60" height="8" rx="4" fill="#050505" />
-      <text x="150" y="602" fill="#555" fontSize="6" textAnchor="middle">PORT</text>
+      {/* ── Bottom charging port ── */}
+      <rect x="126" y="607" width="48" height="7" rx="3.5" fill="#0A0A0A" />
 
-      {/* Side Buttons (Simulated on the edges) */}
-      <rect x="1" y="120" width="2" height="35" rx="1" fill="#444" />
-      <rect x="1" y="170" width="2" height="35" rx="1" fill="#444" />
-      <rect x="297" y="150" width="2" height="55" rx="1" fill="#444" />
-      
+      {/* ── Side buttons (purely decorative) ── */}
+      {/* Left: mute toggle */}
+      <rect x="0" y="105" width="3" height="26" rx="1.5" fill="#2a2a2a" />
+      {/* Left: volume up */}
+      <rect x="0" y="143" width="3" height="36" rx="1.5" fill="#2a2a2a" />
+      {/* Left: volume down */}
+      <rect x="0" y="189" width="3" height="36" rx="1.5" fill="#2a2a2a" />
+      {/* Right: power */}
+      <rect x="297" y="148" width="3" height="54" rx="1.5" fill="#2a2a2a" />
+
+      {/* ── Glass sheen (subtle top-left highlight) ── */}
+      <ellipse cx="80" cy="200" rx="60" ry="120"
+        fill="url(#sheen)" opacity="0.04" />
+      <defs>
+        <radialGradient id="sheen" cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="white" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+      </defs>
     </svg>
   );
 }
