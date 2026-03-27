@@ -1,35 +1,68 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Environment } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 
 function MeshLink({ canvasEl }: { canvasEl: HTMLCanvasElement }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
-  const lastUpdate = useRef(0);
+  const interacting = useRef(false);
+  const interactionTimer = useRef<NodeJS.Timeout | null>(null);
   
-  const texture = useMemo(() => {
-    if (!canvasEl) return null;
+  const materials = useMemo(() => {
+    const sideMat = new THREE.MeshStandardMaterial({ color: "#0A0A0A", roughness: 0.8 });
+    const backMat = new THREE.MeshStandardMaterial({ color: "#0A0A0A", roughness: 0.8 });
+    
+    if (!canvasEl) {
+      return [sideMat, sideMat, sideMat, sideMat, backMat, backMat];
+    }
+    
     const tex = new THREE.CanvasTexture(canvasEl);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.flipY = false;
     textureRef.current = tex;
-    return tex;
+    
+    const frontMat = new THREE.MeshStandardMaterial({ 
+      map: tex, roughness: 0.3, metalness: 0.1 
+    });
+    
+    return [sideMat, sideMat, sideMat, sideMat, frontMat, backMat];
   }, [canvasEl]);
 
-  useFrame((state) => {
-    // Throttle texture update to ~10fps (every 100ms) to prevent massive memory dumps
-    if (textureRef.current && state.clock.elapsedTime - lastUpdate.current > 0.1) {
-      textureRef.current.needsUpdate = true;
-      lastUpdate.current = state.clock.elapsedTime;
+  useFrame(() => {
+    if (meshRef.current && !interacting.current) {
+      meshRef.current.rotation.y += 0.003;
     }
   });
 
+  useEffect(() => {
+    const handleTextureSync = () => {
+      if (textureRef.current) textureRef.current.needsUpdate = true;
+    };
+    window.addEventListener('fabric-sync', handleTextureSync);
+    return () => window.removeEventListener('fabric-sync', handleTextureSync);
+  }, []);
+
   return (
-    <RoundedBox ref={meshRef} args={[1.5, 3.0, 0.2]} radius={0.15} smoothness={4} castShadow receiveShadow>
-      <meshStandardMaterial color="#ffffff" roughness={0.3} metalness={0.2} map={texture} />
-    </RoundedBox>
+    <mesh 
+      ref={meshRef} 
+      material={materials}
+      castShadow 
+      receiveShadow
+      onPointerDown={() => {
+        interacting.current = true;
+        if (interactionTimer.current) clearTimeout(interactionTimer.current);
+      }}
+      onPointerUp={() => {
+        interactionTimer.current = setTimeout(() => {
+          interacting.current = false;
+        }, 3000);
+      }}
+    >
+      <boxGeometry args={[1.5, 3.0, 0.12]} />
+    </mesh>
   );
 }
 
@@ -44,7 +77,7 @@ export default function PhoneModel3D({ canvasEl }: { canvasEl: HTMLCanvasElement
         <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#C6FF00" />
         <Environment preset="studio" />
         <MeshLink canvasEl={canvasEl} />
-        <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={1} maxPolarAngle={Math.PI / 1.5} minPolarAngle={Math.PI / 3} />
+        <OrbitControls enableZoom={true} maxPolarAngle={Math.PI / 1.5} minPolarAngle={Math.PI / 3} />
       </Canvas>
     </div>
   );

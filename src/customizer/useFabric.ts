@@ -64,6 +64,10 @@ export const useFabric = () => {
     canvas.on('object:modified', saveHistory);
     canvas.on('object:removed', saveHistory);
     
+    canvas.on('after:render', () => {
+      window.dispatchEvent(new Event('fabric-sync'));
+    });
+    
     // Initial state
     canvas.clear();
     saveHistory();

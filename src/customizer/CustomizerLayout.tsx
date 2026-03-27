@@ -8,6 +8,7 @@ import { useFabric } from "./useFabric";
 const PhoneModel3D = dynamic(() => import("./PhoneModel3D"), { ssr: false });
 const ToolsPanel = dynamic(() => import("./ToolsPanel"), { ssr: false });
 const LayerManager = dynamic(() => import("./LayerManager"), { ssr: false });
+const PhoneCaseSVG = dynamic(() => import("./PhoneCaseSVG"), { ssr: false });
 
 export default function CustomizerLayout() {
   const fabricApi = useFabric();
@@ -61,8 +62,9 @@ export default function CustomizerLayout() {
         </div>
         
         <div className="flex-1 w-full h-[800px] flex items-center justify-center p-8 overflow-hidden bg-[radial-gradient(circle_at_center,_#2A2A2A_1px,_transparent_1px)] bg-[size:20px_20px]">
-          {/* Virtual Phone Case Bounding Box */}
-          <div className="relative rounded-[40px] border-[14px] border-[#0A0A0A] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden bg-white" style={{ width: 400, height: 800, minHeight: 800 }}>
+          {/* Virtual Phone Case Silhouette */}
+          <div className="relative drop-shadow-2xl" style={{ width: 300, height: 620, minHeight: 620 }}>
+            <PhoneCaseSVG model={phoneModel} />
             <canvas ref={fabricApi.canvasRef} className="absolute inset-0" />
           </div>
         </div>
