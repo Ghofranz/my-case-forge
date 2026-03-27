@@ -20,8 +20,10 @@ export default function CustomizerLayout() {
   const [modelDropdown, setModelDropdown] = useState(false);
   const [designName, setDesignName] = useState("Untitled Design");
   const [isSaved, setIsSaved] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const originalWarn = console.warn;
     console.warn = (...args) => {
       if (typeof args[0] === 'string' && args[0].includes('findDOMNode')) return;
@@ -29,6 +31,15 @@ export default function CustomizerLayout() {
     };
     return () => { console.warn = originalWarn; };
   }, []);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[calc(100vh-80px)] flex flex-col items-center justify-center bg-[#0F0F11]">
+        <div className="w-16 h-16 border-4 border-[#333] border-t-[#C6FF00] rounded-full animate-spin"></div>
+        <div className="mt-8 font-bebas text-2xl tracking-[0.2em] text-[#C6FF00] animate-pulse">Initializing Forge</div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col items-center bg-[#0F0F11]">
