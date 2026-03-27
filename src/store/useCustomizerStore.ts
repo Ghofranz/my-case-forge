@@ -8,6 +8,7 @@ export interface LayerItem {
   name: string;
   locked: boolean;
   opacity: number;
+  visible?: boolean;
 }
 
 interface CustomizerState {

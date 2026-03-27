@@ -4,13 +4,16 @@ import Link from "next/link";
 import { Leaf, Battery, ShoppingCart } from "lucide-react";
 import { useEcoStore } from "../store/ecoStore";
 import { motion } from "framer-motion";
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const { ecoMode, toggleEcoMode } = useEcoStore();
+  const pathname = usePathname();
+  const isDark = pathname === '/customizer';
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-brand-black/10 bg-brand-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <nav className={`sticky top-0 z-50 w-full border-b backdrop-blur-[20px] transition-colors ${isDark ? 'border-[#222] bg-[rgba(15,15,17,0.85)]' : 'border-brand-black/10 bg-brand-white/80'}`}>
+      <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2">
           {!ecoMode ? (
@@ -18,26 +21,26 @@ export default function Navbar() {
               whileHover={{ rotate: 5, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
             >
-              <h1 className="text-3xl font-bold tracking-wider text-brand-black font-bebas uppercase">
+              <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'}`}>
                 CaseForge
               </h1>
             </motion.div>
           ) : (
-            <h1 className="text-3xl font-bold tracking-wider text-brand-black font-bebas uppercase">
+            <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'}`}>
               CaseForge
             </h1>
           )}
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex flex-1 items-center justify-center space-x-8">
-          <Link href="/shop" className="text-sm font-medium hover:text-brand-lime transition-colors">
+        <div className={`hidden md:flex flex-1 items-center justify-center space-x-12 ${isDark ? 'text-gray-300' : 'text-brand-black'}`}>
+          <Link href="/shop" className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#C6FF00] ${pathname === '/shop' ? 'text-[#C6FF00]' : ''}`}>
             Shop
           </Link>
-          <Link href="/customizer" className="text-sm font-medium hover:text-brand-lime transition-colors">
+          <Link href="/customizer" className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#C6FF00] ${pathname === '/customizer' ? 'text-[#C6FF00] border-b-2 border-[#C6FF00] pb-1' : ''}`}>
             Customizer
           </Link>
-          <Link href="/community" className="text-sm font-medium hover:text-brand-lime transition-colors">
+          <Link href="/community" className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-[#C6FF00] ${pathname === '/community' ? 'text-[#C6FF00]' : ''}`}>
             Community Vault
           </Link>
         </div>
@@ -46,20 +49,21 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleEcoMode}
-            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
               ecoMode
-                ? "bg-brand-lime text-brand-black shadow-sm"
-                : "bg-brand-black/5 text-brand-black hover:bg-brand-black/10"
+                ? "bg-[#C6FF00] text-black shadow-[0_0_15px_rgba(198,255,0,0.3)]"
+                : isDark 
+                  ? "bg-[#1e1e22] text-white hover:text-[#C6FF00] border border-[#333]" 
+                  : "bg-brand-black/5 text-brand-black hover:bg-brand-black/10"
             }`}
-            title={ecoMode ? "Eco-Stream Mode On" : "Enable Eco-Stream Mode"}
           >
             {ecoMode ? <Leaf className="h-4 w-4" /> : <Battery className="h-4 w-4" />}
-            <span className="hidden sm:inline">{ecoMode ? "Eco-Mode On" : "Eco-Mode"}</span>
+            <span className="hidden sm:inline">{ecoMode ? "Eco-Mode" : "Eco-Mode"}</span>
           </button>
           
-          <button className="relative rounded-full p-2 text-brand-black hover:bg-brand-black/5 transition-colors">
+          <button className={`relative rounded-full p-2 transition-colors ${isDark ? 'text-white hover:bg-[#1e1e22]' : 'text-brand-black hover:bg-brand-black/5'}`}>
             <ShoppingCart className="h-5 w-5" />
-            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-brand-lime text-[10px] font-bold text-brand-black">
+            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#C6FF00] text-[10px] font-bold text-black border-2 border-[rgba(15,15,17,0.85)]">
               0
             </span>
           </button>

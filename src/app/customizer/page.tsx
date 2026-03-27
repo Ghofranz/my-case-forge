@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function CustomizerPage() {
   return (
-    <div className="w-full bg-[#0D0D0D] min-h-screen">
+    <div className="w-full bg-[#0F0F11] min-h-screen">
       <CustomizerLayout />
     </div>
   );
