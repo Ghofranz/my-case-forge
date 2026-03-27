@@ -21,8 +21,8 @@ export const useFabric = () => {
     if (!canvasRef.current || typeof window === 'undefined') return;
 
     const canvas = new fabric.Canvas(canvasRef.current, {
-      width: 400,
-      height: 800,
+      width: 300,
+      height: 620,
       backgroundColor: '#C6FF00',
       preserveObjectStacking: true, // Keep standard z-index ordering
     });
