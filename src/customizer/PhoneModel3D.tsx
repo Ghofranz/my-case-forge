@@ -9,7 +9,7 @@ import { DEVICE_METRICS } from "./PhoneCaseSVG";
 function SceneSetup() {
   const { scene } = useThree();
   useEffect(() => {
-    scene.background = new THREE.Color("#0d0d14");
+    scene.background = new THREE.Color("#ffffff");
   }, [scene]);
   return null;
 }
@@ -81,7 +81,7 @@ function MeshLink({ canvasEl, model }: { canvasEl: HTMLCanvasElement, model: str
       {/* Subtle floor grid */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
         <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#222" transparent opacity={0.15} wireframe />
+        <meshStandardMaterial color="#cccccc" transparent opacity={0.4} wireframe />
       </mesh>
     </>
   );
@@ -91,7 +91,7 @@ export default function PhoneModel3D({ canvasEl, model }: { canvasEl: HTMLCanvas
   if (!canvasEl) return <div className="w-full h-full bg-[#161616] animate-pulse rounded-xl" />;
 
   return (
-    <div className="w-full h-full bg-[#0d0d14] rounded-xl overflow-hidden relative shadow-inner border border-[#2a2a2e]">
+    <div className="w-full h-full bg-white rounded-[16px] overflow-hidden relative border border-[#eeeeee]">
       <Canvas camera={{ position: [0, 0, 4.5], fov: 50 }} shadows dpr={[1, 2]}>
         <SceneSetup />
         <ambientLight intensity={0.4} />

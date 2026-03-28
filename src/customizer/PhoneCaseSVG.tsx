@@ -38,7 +38,7 @@ export default function PhoneCaseSVG({ model }: Props) {
         x="1" y="1" width="298" height="618"
         rx={rx - 1} ry={rx - 1}
         fill="none"
-        stroke="#3a3a3a"
+        stroke="#e5e5e0"
         strokeWidth="2"
       />
       {/* Inner subtle edge sheen */}

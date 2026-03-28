@@ -6,7 +6,7 @@ import { useCustomizerStore, LayerItem } from '../store/useCustomizerStore';
 export const preloadFont = (fontFamily: string): Promise<void> =>
   document.fonts.load(`16px "${fontFamily}"`).then(() => {});
 
-export const useFabric = () => {
+export const useFabric = (mounted: boolean = false) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const { setLayers, setCanUndo, setCanRedo } = useCustomizerStore();
@@ -15,13 +15,14 @@ export const useFabric = () => {
   const isHistoryProcessing = useRef(false);
 
   useEffect(() => {
-    if (!canvasRef.current || typeof window === 'undefined') return;
+    // BUG FIX: Wait strictly for Next.js to mount the component and React to paint the Ref
+    if (!mounted || !canvasRef.current || typeof window === 'undefined') return;
+    if (fabricRef.current) return; // Prevent double initialization
 
-    // Fabric v6: pass width/height explicitly
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: 300,
       height: 620,
-      backgroundColor: '#C6FF00',
+      backgroundColor: '#EFEFEF', // Cozy Light Theme Default Empty Color
       preserveObjectStacking: true,
     });
     fabricRef.current = canvas;
@@ -41,8 +42,7 @@ export const useFabric = () => {
 
     const saveHistory = () => {
       if (isHistoryProcessing.current) return;
-      const snapshot = JSON.stringify(canvas.toJSON(['id', 'name']));
-      // Truncate forward history on new action
+      const snapshot = JSON.stringify((canvas as any).toJSON(['id', 'name']));
       historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
       historyRef.current.push(snapshot);
       if (historyRef.current.length > 50) historyRef.current.shift();
@@ -60,15 +60,14 @@ export const useFabric = () => {
       window.dispatchEvent(new Event('fabric-sync'));
     });
 
-    // Save initial empty state
-    historyRef.current = [JSON.stringify(canvas.toJSON(['id', 'name']))];
+    historyRef.current = [JSON.stringify((canvas as any).toJSON(['id', 'name']))];
     historyIndexRef.current = 0;
 
     return () => {
       canvas.dispose();
       fabricRef.current = null;
     };
-  }, [setLayers, setCanUndo, setCanRedo]);
+  }, [mounted, setLayers, setCanUndo, setCanRedo]);
 
   const restoreSnapshot = useCallback(async (snapshot: string) => {
     if (!fabricRef.current) return;
@@ -128,7 +127,6 @@ export const useFabric = () => {
     const reader = new FileReader();
     reader.onload = (f) => {
       const data = f.target?.result as string;
-      // Fabric v6: fromURL returns a Promise
       fabric.FabricImage.fromURL(data).then((img) => {
         img.scaleToWidth(200);
         img.set({ left: 50, top: 100 });
@@ -158,13 +156,11 @@ export const useFabric = () => {
 
   const setBackgroundColor = useCallback((color: string) => {
     if (!fabricRef.current) return;
-    // Directly set background — no dummy object (avoids history loop)
     fabricRef.current.set('backgroundColor', color);
     fabricRef.current.requestRenderAll();
 
-    // Manually snapshot for undo
     if (isHistoryProcessing.current) return;
-    const snapshot = JSON.stringify(fabricRef.current.toJSON(['id', 'name']));
+    const snapshot = JSON.stringify((fabricRef.current as any).toJSON(['id', 'name']));
     historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
     historyRef.current.push(snapshot);
     if (historyRef.current.length <= 50) historyIndexRef.current++;
