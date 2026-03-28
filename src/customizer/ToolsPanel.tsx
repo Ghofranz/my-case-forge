@@ -30,18 +30,20 @@ const PRESET_COLORS = [
 
 export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
   const { activeTab, setActiveTab } = useCustomizerStore();
-  const [color, setColor]         = useState('#EFEFEF');
+  
+  const [caseColor, setCaseColor] = useState('#EFEFEF');
+  const [textColor, setTextColor] = useState('#0A0A0A');
   const [textInput, setTextInput] = useState('CASEFORGE');
 
-  const handleColorChange = (newColor: string) => {
-    setColor(newColor);
+  const handleCaseColorChange = (newColor: string) => {
+    setCaseColor(newColor);
     fabricApi.setBackgroundColor(newColor);
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-white border border-[#e5e5e0] rounded-[24px] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all">
+    <div className="flex flex-col h-[600px] bg-white border border-[#e5e5e0] rounded-[24px] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.02)] transition-all flex-shrink-0">
       {/* Tab bar */}
-      <div className="flex bg-[#F9F9F9] p-2 gap-1 rounded-t-[24px] border-b border-[#f0f0f0]">
+      <div className="flex bg-[#F9F9F9] p-2 gap-1 rounded-t-[24px] border-b border-[#f0f0f0] flex-shrink-0">
         {(['colors','text','images','stickers'] as const).map((tab) => (
           <button
             key={tab}
@@ -57,13 +59,13 @@ export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
         ))}
       </div>
 
-      <div className="p-4 flex-1 overflow-y-auto">
-        {/* ── COLORS ── */}
+      <div className="p-4 flex-1 overflow-y-auto w-full max-h-[500px]">
+        {/* ── COLORS (Case Body) ── */}
         {activeTab === 'colors' && (
           <div className="flex flex-col gap-4 items-center">
             
             <div className="w-full p-2 bg-[#F9F9F9] rounded-[16px] border border-[#f0f0f0] shadow-sm">
-                <HexColorPicker color={color} onChange={handleColorChange} style={{ width: '100%', height: '160px' }} />
+                <HexColorPicker color={caseColor} onChange={handleCaseColorChange} style={{ width: '100%', height: '160px' }} />
             </div>
 
             <div className="grid grid-cols-4 gap-3 w-full mt-1 bg-[#F9F9F9] p-4 rounded-[16px] border border-[#eee]">
@@ -73,7 +75,7 @@ export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
               {PRESET_COLORS.map((c) => (
                 <button
                   key={c}
-                  onClick={() => handleColorChange(c)}
+                  onClick={() => handleCaseColorChange(c)}
                   title={c}
                   style={{ backgroundColor: c }}
                   className="w-full aspect-square rounded-full border border-[#ddd] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:scale-110 hover:border-[#C6FF00] transition-all"
@@ -85,8 +87,8 @@ export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
             <div className="w-full flex items-center justify-between bg-white border border-[#e5e5e0] rounded-[12px] px-4 py-3 shadow-sm">
               <span className="text-[10px] font-bold text-[#888] tracking-widest uppercase">Hex Code</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-[#0A0A0A]">{color.toUpperCase()}</span>
-                <div className="w-4 h-4 rounded-full border border-[#ddd]" style={{ backgroundColor: color }} />
+                <span className="text-xs font-mono font-bold text-[#0A0A0A]">{caseColor.toUpperCase()}</span>
+                <div className="w-4 h-4 rounded-full border border-[#ddd]" style={{ backgroundColor: caseColor }} />
               </div>
             </div>
           </div>
@@ -108,6 +110,31 @@ export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
               />
             </div>
 
+            {/* COLOR PICKER ADDED FOR TEXT INK */}
+            <div className="bg-[#F9F9F9] p-4 rounded-[16px] border border-[#eee]">
+               <h4 className="text-[9px] tracking-[0.15em] text-[#888] uppercase font-bold mb-3">
+                Text Ink Color
+              </h4>
+              <div className="flex items-center gap-3">
+                 <input 
+                    type="color" 
+                    value={textColor} 
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="w-10 h-10 p-0 border-0 rounded-full overflow-hidden cursor-pointer flex-shrink-0"
+                 />
+                 <div className="flex-1 grid grid-cols-6 gap-2">
+                    {['#0A0A0A', '#FFFFFF', '#C6FF00', '#FF0055', '#00E5FF','#FFAA00'].map(c => (
+                      <button 
+                        key={c}
+                        onClick={() => setTextColor(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-full aspect-square rounded-full border \${textColor === c ? 'border-[#000]' : 'border-[#ddd]'} shadow-sm hover:scale-110 transition-transform`}
+                      />
+                    ))}
+                 </div>
+              </div>
+            </div>
+
             <div className="bg-[#F9F9F9] p-4 rounded-[16px] border border-[#eee]">
               <h4 className="text-[9px] tracking-[0.15em] text-[#888] uppercase font-bold mb-3">
                 Typography Library
@@ -116,10 +143,10 @@ export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
                 {FONTS.map((font) => (
                   <button
                     key={font.name}
-                    onClick={() => fabricApi.addText(textInput || 'Sample', font.name, '#0A0A0A')}
+                    onClick={() => fabricApi.addText(textInput || 'Sample', font.name, textColor)}
                     className="w-full py-3 px-4 bg-white text-left rounded-[12px] text-[#0A0A0A] hover:border-[#C6FF00] border border-[#e0e0e0] transition-all group flex items-center justify-between shadow-sm hover:shadow-md"
                   >
-                    <span style={{ fontFamily: font.name }} className="text-lg truncate max-w-[140px]">
+                    <span style={{ fontFamily: font.name, color: textColor }} className="text-lg truncate max-w-[140px] drop-shadow-sm">
                       {font.label}
                     </span>
                     <span className="text-[9px] text-[#888] font-bold uppercase tracking-widest group-hover:text-[#0A0A0A]">

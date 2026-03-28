@@ -250,8 +250,8 @@ export default function CustomizerLayout() {
               {(['studio', 'city', 'sunset'] as const).map((l) => (
                 <button 
                   key={l}
-                  onClick={() => { setLighting(l); triggerToast(\`Lighting set to \${l}\`); }}
-                  className={\`flex-1 text-[9px] font-bold tracking-widest py-2.5 rounded-full uppercase transition-all \${lighting === l ? 'bg-[#C6FF00] text-[#000] shadow-sm scale-105' : 'text-[#888] hover:text-[#000]'}\`}
+                  onClick={() => { setLighting(l); triggerToast(`Lighting set to ${l}`); }}
+                  className={`flex-1 text-[9px] font-bold tracking-widest py-2.5 rounded-full uppercase transition-all ${lighting === l ? 'bg-[#C6FF00] text-[#000] shadow-sm scale-105' : 'text-[#888] hover:text-[#000]'}`}
                 >
                   {l === 'city' ? 'Soft' : l}
                 </button>
@@ -307,7 +307,7 @@ export default function CustomizerLayout() {
                 if (!dataURL) return;
                 const a = document.createElement('a');
                 a.href = dataURL;
-                a.download = \`\${designName.replace(/\\s+/g, '-').toLowerCase()}-flat.png\`;
+                a.download = `${designName.replace(/\s+/g, '-').toLowerCase()}-flat.png`;
                 a.click();
                 triggerToast("2D Design Captured to PNG");
               }}

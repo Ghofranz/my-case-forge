@@ -1,142 +1,139 @@
-import React from 'react';
+"use client";
 
-interface Props {
-  model: string;
-}
-
-export const DEVICE_METRICS: Record<string, { rx: number, island: string }> = {
-  'iPhone 15 Pro': { rx: 41, island: 'squircle' },
-  'iPhone 14': { rx: 40, island: 'squircle_small' },
-  'Samsung S24 Ultra': { rx: 12, island: 'quad_circles' },
-  'Pixel 8 Pro': { rx: 38, island: 'visor' },
-  'OnePlus 12': { rx: 30, island: 'circle_huge' },
-  'Xiaomi 14': { rx: 34, island: 'square_rounded' },
+export const DEVICE_METRICS: Record<string, { w: number; h: number; rx: number; camera: any }> = {
+  'iPhone 15 Pro': {
+    w: 300,
+    h: 620,
+    rx: 48,
+    camera: { type: 'squircle', x: 20, y: 20, w: 90, h: 90, rx: 20 },
+  },
+  'iPhone 14': {
+    w: 300,
+    h: 620,
+    rx: 44,
+    camera: { type: 'squircle', x: 20, y: 20, w: 80, h: 80, rx: 16 },
+  },
+  'Samsung S24 Ultra': {
+    w: 310,
+    h: 640,
+    rx: 8,
+    camera: { type: 'quad-lens', x: 20, y: 20, w: 40, h: 120 },
+  },
+  'Pixel 8 Pro': {
+    w: 300,
+    h: 630,
+    rx: 36,
+    camera: { type: 'visor', x: 0, y: 80, w: 300, h: 60 },
+  },
+  'OnePlus 12': {
+    w: 305,
+    h: 635,
+    rx: 32,
+    camera: { type: 'circle', x: 20, y: 30, r: 45 },
+  },
+  'Xiaomi 14': {
+    w: 300,
+    h: 625,
+    rx: 24,
+    camera: { type: 'squircle', x: 20, y: 20, w: 95, h: 95, rx: 12 },
+  },
 };
 
-export default function PhoneCaseSVG({ model }: Props) {
-  const metrics = DEVICE_METRICS[model] || DEVICE_METRICS['iPhone 15 Pro'];
-  const { rx, island } = metrics;
+export default function PhoneCaseSVG({ model }: { model?: string }) {
+  const metrics = DEVICE_METRICS[model || 'iPhone 15 Pro'] || DEVICE_METRICS['iPhone 15 Pro'];
+  const { w, h, rx, camera } = metrics;
 
   return (
-    <svg
-      className="absolute inset-0 pointer-events-none"
-      viewBox="0 0 300 620"
-      width="300"
-      height="620"
+    <svg 
+      className="absolute inset-0 pointer-events-none" 
+      width={w} 
+      height={h} 
+      viewBox={`0 0 ${w} ${h}`} 
+      fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      style={{ zIndex: 20 }}
+      style={{ zIndex: 50 }} // Stays strictly OVER the canvas
     >
       <defs>
-        <radialGradient id="sheen" cx="50%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="white" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </radialGradient>
+        {/* Dynamic ClipPath matching the exact hardware silhouette (excluding front screen things) */}
+        <clipPath id="phone-mask">
+          <path
+            d={`
+              M ${rx} 0
+              H ${w - rx}
+              A ${rx} ${rx} 0 0 1 ${w} ${rx}
+              V ${h - rx}
+              A ${rx} ${rx} 0 0 1 ${w - rx} ${h}
+              H ${rx}
+              A ${rx} ${rx} 0 0 1 0 ${h - rx}
+              V ${rx}
+              A ${rx} ${rx} 0 0 1 ${rx} 0
+              Z
+            `}
+          />
+        </clipPath>
       </defs>
 
-      {/* ── Rounded border highlight ── */}
+      {/* ── Outer white frame blocking the overflowing canvas pixels ── */}
+      <path
+        d={`
+          M 0 0 H ${w} V ${h} H 0 Z
+          M ${rx} 0
+          A ${rx} ${rx} 0 0 0 0 ${rx}
+          V ${h - rx}
+          A ${rx} ${rx} 0 0 0 ${rx} ${h}
+          H ${w - rx}
+          A ${rx} ${rx} 0 0 0 ${w} ${h - rx}
+          V ${rx}
+          A ${rx} ${rx} 0 0 0 ${w - rx} 0
+          Z
+        `}
+        fill="#ffffff"
+        fillRule="evenodd"
+      />
+
+      {/* ── Glass Edge Stroke ── */}
       <rect
-        x="1" y="1" width="298" height="618"
+        x="1" y="1" width={w - 2} height={h - 2}
         rx={rx - 1} ry={rx - 1}
         fill="none"
         stroke="#e5e5e0"
         strokeWidth="2"
       />
-      {/* Inner subtle edge sheen */}
-      <rect
-        x="3" y="3" width="294" height="614"
-        rx={rx - 3} ry={rx - 3}
-        fill="none"
-        stroke="rgba(255,255,255,0.04)"
-        strokeWidth="1"
-      />
 
-      {/* ── Dynamic Island (Front screen cutout illusion) ── */}
-      {model.includes('iPhone') && (
-        <rect x="100" y="14" width="100" height="17" rx="8.5" fill="#0A0A0A" />
+      {/* ── CAMERA CUTOUT LAYER ── */}
+      {camera.type === 'squircle' && (
+        <rect
+          x={camera.x} y={camera.y}
+          width={camera.w} height={camera.h}
+          rx={camera.rx} fill="#0A0A0A"
+          stroke="#e5e5e0" strokeWidth="2"
+        />
       )}
 
-      {/* ── Camera islands ── */}
-      {island === 'squircle' && (
+      {camera.type === 'quad-lens' && (
         <g>
-          <rect x="14" y="18" width="108" height="108" rx="22" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <circle cx="38" cy="47" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
-          <circle cx="38" cy="47" r="9" fill="#000" stroke="#111" strokeWidth="1" />
-          <circle cx="38" cy="89" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
-          <circle cx="38" cy="89" r="9" fill="#000" stroke="#111" strokeWidth="1" />
-          <circle cx="82" cy="68" r="15" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
-          <circle cx="82" cy="68" r="9" fill="#000" stroke="#111" strokeWidth="1" />
-          <circle cx="96" cy="26" r="5" fill="#111" stroke="#222" strokeWidth="1" />
-          <text x="68" y="116" fill="#444" fontSize="6.5" textAnchor="middle" fontWeight="bold" letterSpacing="1">CAMERA</text>
+          {[0, 30, 60, 90].map((dy) => (
+            <circle key={dy} cx={camera.x + 20} cy={camera.y + dy + 15} r="12" fill="#0A0A0A" stroke="#333" strokeWidth="2" />
+          ))}
+          <circle cx={camera.x + 50} cy={camera.y + 45} r="8" fill="#0A0A0A" stroke="#333" strokeWidth="2" />
         </g>
       )}
 
-      {island === 'squircle_small' && (
-        <g>
-          <rect x="14" y="18" width="90" height="90" rx="18" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <circle cx="38" cy="40" r="14" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
-          <circle cx="70" cy="72" r="14" fill="#030303" stroke="#1f1f1f" strokeWidth="2" />
-          <circle cx="75" cy="30" r="4" fill="#111" />
-        </g>
+      {camera.type === 'visor' && (
+        <rect
+          x={camera.x} y={camera.y}
+          width={camera.w} height={camera.h}
+          rx="12" fill="#0A0A0A"
+        />
       )}
 
-      {island === 'quad_circles' && (
-        <g>
-          {/* S24 Ultra individual lenses */}
-          <circle cx="35" cy="40" r="15" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <circle cx="35" cy="40" r="9" fill="#030303" />
-          <circle cx="35" cy="80" r="15" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <circle cx="35" cy="80" r="9" fill="#030303" />
-          <circle cx="35" cy="120" r="15" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <circle cx="35" cy="120" r="9" fill="#030303" />
-          <circle cx="65" cy="60" r="8" fill="#111" stroke="#222" strokeWidth="1.5" />
-          <circle cx="65" cy="100" r="10" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-        </g>
+      {camera.type === 'circle' && (
+        <circle
+          cx={camera.x + camera.r} cy={camera.y + camera.r}
+          r={camera.r} fill="#0A0A0A"
+          stroke="#444" strokeWidth="2"
+        />
       )}
-
-      {island === 'visor' && (
-        <g>
-          {/* Pixel 8 Pro full-width visor */}
-          <rect x="-2" y="42" width="304" height="42" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-          <rect x="80" y="48" width="100" height="30" rx="15" fill="#030303" stroke="#1f1f1f" strokeWidth="1" />
-          <circle cx="95" cy="63" r="8" fill="#000" />
-          <circle cx="130" cy="63" r="8" fill="#000" />
-          <circle cx="165" cy="63" r="8" fill="#000" />
-          <circle cx="205" cy="63" r="6" fill="#111" />
-        </g>
-      )}
-
-      {island === 'circle_huge' && (
-        <g>
-           {/* OnePlus 12 offset circular bump */}
-           <circle cx="90" cy="100" r="60" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-           <circle cx="65" cy="80" r="14" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-           <circle cx="115" cy="80" r="14" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-           <circle cx="65" cy="120" r="14" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-           <circle cx="115" cy="120" r="10" fill="#111" />
-        </g>
-      )}
-
-      {island === 'square_rounded' && (
-        <g>
-           {/* Xiaomi 14 huge squarish bump */}
-           <rect x="20" y="24" width="130" height="130" rx="30" fill="#080808" stroke="#2a2a2a" strokeWidth="1.5" />
-           <circle cx="55" cy="59" r="18" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-           <circle cx="115" cy="59" r="18" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-           <circle cx="55" cy="119" r="18" fill="#030303" stroke="#1f1f1f" strokeWidth="1.5" />
-        </g>
-      )}
-
-      {/* ── Base Phone Outlines (Buttons & Ports) ── */}
-      <rect x="126" y="607" width="48" height="7" rx="3.5" fill="#0A0A0A" />
-
-      <rect x="0" y="105" width="3" height="26" rx="1.5" fill="#2a2a2a" />
-      <rect x="0" y="143" width="3" height="36" rx="1.5" fill="#2a2a2a" />
-      <rect x="0" y="189" width="3" height="36" rx="1.5" fill="#2a2a2a" />
-      
-      <rect x="297" y="148" width="3" height="54" rx="1.5" fill="#2a2a2a" />
-
-      {/* ── Glass sheen (subtle top-left highlight) ── */}
-      <ellipse cx="80" cy="200" rx="60" ry="120" fill="url(#sheen)" opacity="0.04" />
     </svg>
   );
 }

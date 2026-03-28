@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { OrbitControls, Environment, RoundedBox, Decal } from "@react-three/drei";
 import * as THREE from "three";
 import { DEVICE_METRICS } from "./PhoneCaseSVG";
 
@@ -15,45 +15,35 @@ function SceneSetup() {
 }
 
 function MeshLink({ canvasEl, model }: { canvasEl: HTMLCanvasElement, model: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshGroupRef = useRef<THREE.Group>(null);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const interacting = useRef(false);
   const interactionTimer = useRef<NodeJS.Timeout | null>(null);
-  
-  const materials = useMemo(() => {
-    // Basic dark matte material for the sides of the phone case
-    const sideMat = new THREE.MeshStandardMaterial({ color: "#0A0A0A", roughness: 0.8 });
-    const backMat = new THREE.MeshStandardMaterial({ color: "#0A0A0A", roughness: 0.8 });
+
+  const tex = useMemo(() => {
+    if (!canvasEl) return null;
+    const t = new THREE.CanvasTexture(canvasEl);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.flipY = true; // Fixes vertical inverted maps
     
-    if (!canvasEl) {
-      return [sideMat, sideMat, sideMat, sideMat, backMat, backMat];
-    }
-    
-    const tex = new THREE.CanvasTexture(canvasEl);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.flipY = false;
-    textureRef.current = tex;
-    
-    // Front material maps the fabric texture
-    const frontMat = new THREE.MeshStandardMaterial({ 
-      map: tex, roughness: 0.3, metalness: 0.1 
-    });
-    
-    // R3F Material Array order matches standard BoxGeometry faces:
-    // [right, left, top, bottom, front, back]
-    // The canvas texture maps precisely to index 4 (front)
-    return [sideMat, sideMat, sideMat, sideMat, frontMat, backMat];
+    // Fix mirror effect! Three.js maps textures backwards on certain frontal geometries.
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.x = -1;
+    t.offset.x = 1;
+
+    textureRef.current = t;
+    return t;
   }, [canvasEl]);
 
   useFrame(() => {
-    if (meshRef.current && !interacting.current) {
-      meshRef.current.rotation.y += 0.003;
+    if (meshGroupRef.current && !interacting.current) {
+      meshGroupRef.current.rotation.y += 0.003;
     }
   });
 
   useEffect(() => {
     const handleTextureSync = () => {
-      // Direct texture invalidation synchronizes the WebGL instantly
+      // Force sync to 3D when 2D canvas is updated
       if (textureRef.current) textureRef.current.needsUpdate = true;
     };
     window.addEventListener('fabric-sync', handleTextureSync);
@@ -61,28 +51,47 @@ function MeshLink({ canvasEl, model }: { canvasEl: HTMLCanvasElement, model: str
   }, []);
 
   const metrics = DEVICE_METRICS[model] || DEVICE_METRICS['iPhone 15 Pro'];
-  // We apply the corner scale offset dynamically if we used custom geometry, 
-  // but BoxGeometry anchors perfectly on its own!
+  
+  // Transform SVG pixel radius to R3F 3D scale equivalent
+  const roundedScale = (metrics.rx || 42) / 300; 
+  const cornerRadius = Math.max(0.05, roundedScale * 1.5);
 
   return (
-    <>
-      <mesh 
-        ref={meshRef as any}
-        material={materials}
-        castShadow 
-        receiveShadow
-        onPointerDown={() => {
-          interacting.current = true;
-          if (interactionTimer.current) clearTimeout(interactionTimer.current);
-        }}
-        onPointerUp={() => {
-          interactionTimer.current = setTimeout(() => {
-            interacting.current = false;
-          }, 3000);
-        }}
-      >
-        {/* BoxGeometry naturally matches arrays. We drop RoundedBox because it scrambles UV maps! */}
-        <boxGeometry args={[1.5, 3.1, 0.12]} />
+    <group
+      ref={meshGroupRef as any}
+      onPointerDown={() => {
+        interacting.current = true;
+        if (interactionTimer.current) clearTimeout(interactionTimer.current);
+      }}
+      onPointerUp={() => {
+        interactionTimer.current = setTimeout(() => {
+          interacting.current = false;
+        }, 3000);
+      }}
+    >
+      <mesh castShadow receiveShadow>
+        <RoundedBox args={[1.5, 3.1, 0.12]} radius={cornerRadius} smoothness={8}>
+          {/* Base Case Material (e.g., standard matte black or white shell) */}
+          <meshStandardMaterial color="#0A0A0A" roughness={0.7} />
+          
+          {/* Decal to map the 2D customizer perfectly flat onto the curved front face */}
+          {tex && (
+            <Decal
+              position={[0, 0, 0.06]} // Front Z-face projection
+              rotation={[0, 0, 0]}
+              scale={[1.5, 3.1, 1]}   // Lock to standard box dimension
+            >
+              <meshStandardMaterial
+                map={tex}
+                polygonOffset
+                polygonOffsetFactor={-1}
+                roughness={0.2}
+                metalness={0.1}
+                transparent
+              />
+            </Decal>
+          )}
+        </RoundedBox>
       </mesh>
       
       {/* Subtle floor grid */}
@@ -90,7 +99,7 @@ function MeshLink({ canvasEl, model }: { canvasEl: HTMLCanvasElement, model: str
         <planeGeometry args={[20, 20]} />
         <meshStandardMaterial color="#cccccc" transparent opacity={0.4} wireframe />
       </mesh>
-    </>
+    </group>
   );
 }
 
@@ -99,8 +108,7 @@ export default function PhoneModel3D({ canvasEl, model, lighting = 'studio' }: {
 
   return (
     <div className="render-3d-canvas w-full h-full bg-white rounded-[16px] overflow-hidden relative border border-[#eeeeee]">
-      {/* preserveDrawingBuffer is CRITICAL or else the Screenshot toDataURL returns pure black! */}
-      <Canvas gl={{ preserveDrawingBuffer: true }} camera={{ position: [0, 0, 4.5], fov: 50 }} shadows dpr={[1, 2]}>
+      <Canvas gl={{ preserveDrawingBuffer: true, antialias: true }} camera={{ position: [0, 0, 4.5], fov: 50 }} shadows dpr={[1, 2]}>
         <SceneSetup />
         <ambientLight intensity={0.4} />
         <spotLight position={[5, 10, 5]} intensity={1.5} castShadow />
