@@ -18,9 +18,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3">
-          <div className={`w-10 h-10 flex items-center justify-center rounded-[10px] ${isDark ? 'bg-[#C6FF00] text-black' : 'bg-black text-[#C6FF00]'} shadow-[0_4px_20px_rgba(198,255,0,0.2)]`}>
-            <span className="font-bebas text-2xl tracking-tighter leading-none mt-1 pl-0.5">KJ</span>
-          </div>
+          <img src="/logo.png" alt="KaJi Logo" className="w-10 h-10 object-contain drop-shadow-[0_4px_15px_rgba(255,51,85,0.3)]" />
           {!ecoMode ? (
             <motion.div
               whileHover={{ rotate: 2, scale: 1.02 }}

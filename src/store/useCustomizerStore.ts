@@ -15,6 +15,7 @@ export interface CartItem {
   designName: string;
   previewImage: string; // Base64 Data URL
   price: number;
+  isPremium?: boolean;
 }
 
 export interface CommunityDesign {
@@ -25,6 +26,7 @@ export interface CommunityDesign {
   likes: number;
   author: string;
   isPublic: boolean;
+  isPremium?: boolean;
 }
 
 interface CustomizerState {
@@ -78,9 +80,9 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
 
   // Vault Logic (Seed with some competitive hype data)
   communityVault: [
-    { id: '1', phoneModel: 'iPhone 15 Pro', designName: 'Cyber Demon', previewImage: '/cyber_demon.png', likes: 1420, author: 'AlexZ', isPublic: true },
-    { id: '2', phoneModel: 'Samsung S24 Ultra', designName: 'Pastel Sunrise', previewImage: '/pastel_sunrise.png', likes: 934, author: 'SarahM', isPublic: true },
-    { id: '3', phoneModel: 'Pixel 8 Pro', designName: 'Vaporwave Grid', previewImage: '/vaporwave_grid.png', likes: 2150, author: 'NeoTokyo', isPublic: true },
+    { id: '1', phoneModel: 'iPhone 15 Pro', designName: 'KaJi Cyber Drop', previewImage: '/cyber_case.png', likes: 1420, author: 'AlexZ', isPublic: true, isPremium: true },
+    { id: '2', phoneModel: 'Samsung S24 Ultra', designName: 'KaJi Minimalist', previewImage: '/minimal_case.png', likes: 934, author: 'SarahM', isPublic: true, isPremium: true },
+    { id: '3', phoneModel: 'Pixel 8 Pro', designName: 'KaJi Retro Tech', previewImage: '/retro_case.png', likes: 2150, author: 'NeoTokyo', isPublic: true, isPremium: true },
   ],
   publishToVault: (design) => set((state) => ({ communityVault: [design, ...state.communityVault] })),
   upvoteDesign: (id) => set((state) => ({

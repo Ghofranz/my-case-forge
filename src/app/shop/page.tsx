@@ -23,14 +23,15 @@ export default function ShopPage() {
       designName: item.designName,
       previewImage: item.previewImage,
       price: item.price,
+      isPremium: true,
     });
     triggerToast(`Added ${item.designName} to Cart!`);
   };
 
   const shopItems = [
-    { id: 'p1', phoneModel: 'iPhone 15 Pro', designName: 'Cyber Demon Edition', previewImage: '/cyber_demon.png', price: 55.00, tag: 'Bestseller' },
-    { id: 'p2', phoneModel: 'Samsung S24 Ultra', designName: 'Pastel Sunrise Vibe', previewImage: '/pastel_sunrise.png', price: 45.00, tag: 'Premium' },
-    { id: 'p3', phoneModel: 'Pixel 8 Pro', designName: 'Vaporwave Grid 84', previewImage: '/vaporwave_grid.png', price: 40.00, tag: 'Trending' },
+    { id: 'p1', phoneModel: 'iPhone 15 Pro', designName: 'KaJi Cyber Drop', previewImage: '/cyber_case.png', price: 55.00, tag: 'Bestseller' },
+    { id: 'p2', phoneModel: 'Samsung S24 Ultra', designName: 'KaJi Minimalist', previewImage: '/minimal_case.png', price: 45.00, tag: 'Premium' },
+    { id: 'p3', phoneModel: 'Pixel 8 Pro', designName: 'KaJi Retro Tech', previewImage: '/retro_case.png', price: 40.00, tag: 'Trending' },
     { id: 'p4', phoneModel: 'iPhone 14', designName: 'Midnight Carbon', previewImage: '', price: 35.00, tag: 'Sale' },
   ];
 
@@ -67,18 +68,14 @@ export default function ShopPage() {
                </div>
 
                {/* Case Display */}
-               <div className="w-[180px] h-[370px] bg-[#fdfdfc] rounded-[24px] overflow-hidden flex items-center justify-center relative shadow-inner mb-8 shrink-0">
-                  <div className="relative transform scale-[0.58]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
-                    <PhoneCaseMask model={item.phoneModel}>
-                      {item.previewImage ? (
-                        <img src={item.previewImage} alt="case" className="absolute inset-0 w-[300px] h-[620px] object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-[#111] bg-[radial-gradient(circle_at_center,_#333_0%,_#0A0A0A_100%)] flex items-center justify-center border-4 border-[#333]">
-                           <span className="text-[#333] font-bebas text-4xl rotate-90 opacity-20">CARBON FIBER</span>
-                        </div>
-                      )}
-                    </PhoneCaseMask>
-                  </div>
+               <div className="w-full h-[370px] bg-transparent rounded-[24px] flex items-center justify-center relative mb-6 shrink-0 py-2 group-hover:drop-shadow-2xl transition-all duration-500">
+                 {item.previewImage ? (
+                   <img src={item.previewImage} alt="case" className="w-[85%] h-full object-contain drop-shadow-xl group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500" />
+                 ) : (
+                   <div className="w-[180px] h-full bg-[#111] bg-[radial-gradient(circle_at_center,_#333_0%,_#0A0A0A_100%)] flex items-center justify-center border-4 border-[#333] rounded-[30px] shadow-2xl">
+                     <span className="text-[#333] font-bebas text-4xl rotate-90 opacity-20">CARBON</span>
+                   </div>
+                 )}
                </div>
 
                <div className="w-full text-center mb-6">

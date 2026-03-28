@@ -43,8 +43,10 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <div className="w-[160px] h-[330px] bg-[#fdfdfc] rounded-[24px] overflow-hidden flex items-center justify-center relative shadow-inner mt-8 border border-[#f0f0f0] shrink-0">
-        {item.previewImage ? (
+      <div className={`w-[160px] h-[330px] rounded-[24px] overflow-hidden flex items-center justify-center relative mt-8 shrink-0 ${item.isPremium ? 'bg-transparent shadow-none' : 'bg-[#fdfdfc] border border-[#f0f0f0] shadow-inner'}`}>
+        {item.isPremium && item.previewImage ? (
+           <img src={item.previewImage} alt="case" className="w-[85%] h-full object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.2)] group-hover:scale-110 group-hover:-translate-y-3 transition-transform duration-500" />
+        ) : item.previewImage ? (
            <div className="relative pointer-events-none group-hover:scale-105 transition-transform duration-500 transform scale-[0.52]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
              <PhoneCaseMask model={item.phoneModel}>
                <img src={item.previewImage} alt="case" className="absolute inset-0 w-full h-full object-fill drop-shadow-xl" />

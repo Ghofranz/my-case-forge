@@ -49,11 +49,17 @@ export default function CartPage() {
                   className="bg-white rounded-[24px] p-6 flex flex-col sm:flex-row items-center gap-8 border border-[#e5e5e0] shadow-sm relative group"
                 >
                   <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center relative">
-                    <div className="relative transform scale-[0.4]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
-                      <PhoneCaseMask model={item.phoneModel}>
-                        <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
-                      </PhoneCaseMask>
-                    </div>
+                    {item.isPremium ? (
+                      <div className="w-full h-full py-2 bg-gradient-to-br from-[#f8f8f8] to-[#ebebe6] flex items-center justify-center relative overflow-hidden group-hover:-translate-y-1 transition-transform">
+                        <img src={item.previewImage} alt={item.designName} className="w-[90%] h-full object-contain drop-shadow-xl" />
+                      </div>
+                    ) : (
+                      <div className="relative transform scale-[0.4]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
+                        <PhoneCaseMask model={item.phoneModel}>
+                          <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
+                        </PhoneCaseMask>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex-1 flex flex-col w-full">
