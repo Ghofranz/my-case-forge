@@ -159,13 +159,19 @@ export const useFabric = (mounted: boolean = false) => {
     fabricRef.current.set('backgroundColor', color);
     fabricRef.current.requestRenderAll();
 
-    if (isHistoryProcessing.current) return;
-    const snapshot = JSON.stringify((fabricRef.current as any).toJSON(['id', 'name']));
-    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-    historyRef.current.push(snapshot);
-    if (historyRef.current.length <= 50) historyIndexRef.current++;
-    setCanUndo(historyIndexRef.current > 0);
-    setCanRedo(false);
+    if (!isHistoryProcessing.current) {
+      const snapshot = JSON.stringify((fabricRef.current as any).toJSON(['id', 'name']));
+      historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+      historyRef.current.push(snapshot);
+      if (historyRef.current.length <= 50) historyIndexRef.current++;
+      setCanUndo(historyIndexRef.current > 0);
+      setCanRedo(false);
+    }
+    
+    // Explicitly dispatch the sync event to force R3F to pick up the Canvas fill!
+    setTimeout(() => {
+      window.dispatchEvent(new Event('fabric-sync'));
+    }, 50);
   }, [setCanUndo, setCanRedo]);
 
   return {

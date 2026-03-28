@@ -45,13 +45,13 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
 
   return (
     <svg 
-      className="absolute inset-0 pointer-events-none" 
-      width={w} 
-      height={h} 
-      viewBox={`0 0 ${w} ${h}`} 
+      className="absolute inset-0 pointer-events-none drop-shadow-2xl" 
+      width={w + 20} 
+      height={h + 20} 
+      viewBox={`-10 -10 ${w + 20} ${h + 20}`} 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      style={{ zIndex: 50 }} // Stays strictly OVER the canvas
+      style={{ zIndex: 50, left: -10, top: -10 }} 
     >
       <defs>
         {/* Dynamic ClipPath matching the exact hardware silhouette (excluding front screen things) */}
@@ -71,12 +71,26 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
             `}
           />
         </clipPath>
+
+        <linearGradient id="glossy-overlay" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
+          <stop offset="25%" stopColor="#ffffff" stopOpacity="0.0" />
+          <stop offset="60%" stopColor="#ffffff" stopOpacity="0.0" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.2" />
+        </linearGradient>
+
+        <linearGradient id="metal-edge" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#dddddd" />
+          <stop offset="50%" stopColor="#fdfdfd" />
+          <stop offset="100%" stopColor="#aaaaaa" />
+        </linearGradient>
       </defs>
 
       {/* ── Outer white frame blocking the overflowing canvas pixels ── */}
+      {/* We apply a large block spanning the whole canvas minus the rounded path */}
       <path
         d={`
-          M 0 0 H ${w} V ${h} H 0 Z
+          M -10 -10 H ${w+10} V ${h+10} H -10 Z
           M ${rx} 0
           A ${rx} ${rx} 0 0 0 0 ${rx}
           V ${h - rx}
@@ -87,18 +101,34 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
           A ${rx} ${rx} 0 0 0 ${w - rx} 0
           Z
         `}
-        fill="#ffffff"
+        fill="#F8F8F8" // matches background exactly to erase canvas bleed
         fillRule="evenodd"
+      />
+
+      {/* ── Shining Glass Case Frame Overlay ── */}
+      <rect
+         x="0" y="0" width={w} height={h} rx={rx}
+         fill="url(#glossy-overlay)"
+         className="mix-blend-overlay"
       />
 
       {/* ── Glass Edge Stroke ── */}
       <rect
-        x="1" y="1" width={w - 2} height={h - 2}
-        rx={rx - 1} ry={rx - 1}
+        x="1.5" y="1.5" width={w - 3} height={h - 3}
+        rx={rx - 1.5} ry={rx - 1.5}
         fill="none"
-        stroke="#e5e5e0"
-        strokeWidth="2"
+        stroke="url(#metal-edge)"
+        strokeWidth="3"
+        className="opacity-70"
       />
+
+      {/* ── Realistic Hardware Buttons (Side profiles) ── */}
+      {/* Volume Rockers (Left) */}
+      <path d="M -2 120 Q -4 125 -4 130 V 160 Q -4 165 -2 170 Z" fill="#999" />
+      <path d="M -2 180 Q -4 185 -4 190 V 220 Q -4 225 -2 230 Z" fill="#999" />
+      {/* Power Button (Right) */}
+      <path d={`M ${w+2} 150 Q ${w+4} 155 ${w+4} 160 V 210 Q ${w+4} 215 ${w+2} 220 Z`} fill="#999" />
+
 
       {/* ── CAMERA CUTOUT LAYER ── */}
       {camera.type === 'squircle' && (
@@ -106,24 +136,26 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
           x={camera.x} y={camera.y}
           width={camera.w} height={camera.h}
           rx={camera.rx} fill="#0A0A0A"
-          stroke="#e5e5e0" strokeWidth="2"
+          stroke="#444" strokeWidth="3"
+          style={{ filter: 'drop-shadow(0px 8px 12px rgba(0,0,0,0.5))' }}
         />
       )}
 
       {camera.type === 'quad-lens' && (
         <g>
+          <rect x={camera.x - 5} y={camera.y - 10} width={camera.w + 10} height={camera.h + 20} rx="16" fill="#0A0A0A" />
           {[0, 30, 60, 90].map((dy) => (
-            <circle key={dy} cx={camera.x + 20} cy={camera.y + dy + 15} r="12" fill="#0A0A0A" stroke="#333" strokeWidth="2" />
+            <circle key={dy} cx={camera.x + 15} cy={camera.y + dy + 15} r="12" fill="#111" stroke="#333" strokeWidth="2" />
           ))}
-          <circle cx={camera.x + 50} cy={camera.y + 45} r="8" fill="#0A0A0A" stroke="#333" strokeWidth="2" />
         </g>
       )}
 
       {camera.type === 'visor' && (
         <rect
-          x={camera.x} y={camera.y}
-          width={camera.w} height={camera.h}
+          x={camera.x - 5} y={camera.y}
+          width={camera.w + 10} height={camera.h}
           rx="12" fill="#0A0A0A"
+          stroke="#222" strokeWidth="2"
         />
       )}
 
@@ -131,7 +163,7 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
         <circle
           cx={camera.x + camera.r} cy={camera.y + camera.r}
           r={camera.r} fill="#0A0A0A"
-          stroke="#444" strokeWidth="2"
+          stroke="#333" strokeWidth="4"
         />
       )}
     </svg>
