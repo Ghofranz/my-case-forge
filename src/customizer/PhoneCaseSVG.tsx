@@ -54,7 +54,6 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
       style={{ zIndex: 50, left: -10, top: -10 }} 
     >
       <defs>
-        {/* Dynamic ClipPath matching the exact hardware silhouette (excluding front screen things) */}
         <clipPath id="phone-mask">
           <path
             d={`
@@ -72,13 +71,6 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
           />
         </clipPath>
 
-        <linearGradient id="glossy-overlay" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-          <stop offset="25%" stopColor="#ffffff" stopOpacity="0.0" />
-          <stop offset="60%" stopColor="#ffffff" stopOpacity="0.0" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.2" />
-        </linearGradient>
-
         <linearGradient id="metal-edge" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#dddddd" />
           <stop offset="50%" stopColor="#fdfdfd" />
@@ -86,8 +78,6 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
         </linearGradient>
       </defs>
 
-      {/* ── Outer white frame blocking the overflowing canvas pixels ── */}
-      {/* We apply a large block spanning the whole canvas minus the rounded path */}
       <path
         d={`
           M -10 -10 H ${w+10} V ${h+10} H -10 Z
@@ -101,18 +91,10 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
           A ${rx} ${rx} 0 0 0 ${w - rx} 0
           Z
         `}
-        fill="#F8F8F8" // matches background exactly to erase canvas bleed
+        fill="#F8F8F8" 
         fillRule="evenodd"
       />
 
-      {/* ── Shining Glass Case Frame Overlay ── */}
-      <rect
-         x="0" y="0" width={w} height={h} rx={rx}
-         fill="url(#glossy-overlay)"
-         className="mix-blend-overlay"
-      />
-
-      {/* ── Glass Edge Stroke ── */}
       <rect
         x="1.5" y="1.5" width={w - 3} height={h - 3}
         rx={rx - 1.5} ry={rx - 1.5}
@@ -122,15 +104,10 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
         className="opacity-70"
       />
 
-      {/* ── Realistic Hardware Buttons (Side profiles) ── */}
-      {/* Volume Rockers (Left) */}
       <path d="M -2 120 Q -4 125 -4 130 V 160 Q -4 165 -2 170 Z" fill="#999" />
       <path d="M -2 180 Q -4 185 -4 190 V 220 Q -4 225 -2 230 Z" fill="#999" />
-      {/* Power Button (Right) */}
       <path d={`M ${w+2} 150 Q ${w+4} 155 ${w+4} 160 V 210 Q ${w+4} 215 ${w+2} 220 Z`} fill="#999" />
 
-
-      {/* ── CAMERA CUTOUT LAYER ── */}
       {camera.type === 'squircle' && (
         <rect
           x={camera.x} y={camera.y}

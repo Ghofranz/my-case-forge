@@ -29,9 +29,8 @@ const PRESET_COLORS = [
 ];
 
 export default function ToolsPanel({ fabricApi }: { fabricApi: any }) {
-  const { activeTab, setActiveTab } = useCustomizerStore();
+  const { activeTab, setActiveTab, caseColor, setCaseColor } = useCustomizerStore();
   
-  const [caseColor, setCaseColor] = useState('#EFEFEF');
   const [textColor, setTextColor] = useState('#0A0A0A');
   const [textInput, setTextInput] = useState('CASEFORGE');
 
