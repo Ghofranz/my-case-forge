@@ -55,7 +55,7 @@ export default function CustomizerLayout() {
       phoneModel,
       designName: designName || "Untitled Forge",
       previewImage: dataURL,
-      price: 34.99,
+      price: 45.00,
     });
 
     triggerToast("Design Sent to Cart!");
@@ -264,7 +264,7 @@ export default function CustomizerLayout() {
               className="px-10 py-4 bg-[#0A0A0A] text-[#C6FF00] font-bold uppercase text-[13px] rounded-full shadow-[0_5px_20px_rgba(0,0,0,0.2)] hover:scale-[1.03] hover:shadow-[0_10px_35px_rgba(198,255,0,0.3)] transition-all tracking-widest flex items-center gap-3"
             >
               <ShoppingCart className="w-4 h-4" />
-              Add to Cart · $34.99
+              Add to Cart · 45.00 TND
             </button>
           </div>
         </div>

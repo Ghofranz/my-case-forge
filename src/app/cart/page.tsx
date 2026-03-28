@@ -4,9 +4,7 @@ import { useCustomizerStore } from "@/store/useCustomizerStore";
 import { Trash2, ArrowRight, ShoppingBag, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
-
-const PhoneCaseSVG = dynamic(() => import("@/customizer/PhoneCaseSVG"), { ssr: false });
+import PhoneCaseMask from "@/common/PhoneCaseMask";
 
 export default function CartPage() {
   const { cart, removeFromCart } = useCustomizerStore();
@@ -20,7 +18,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-[#F5F5F0] pt-24 pb-32">
       <div className="max-w-5xl mx-auto px-6">
         <h1 className="text-6xl font-bebas text-[#0A0A0A] uppercase tracking-wider mb-12">
-          Your Forge Cart
+          Your KaJi Cart
         </h1>
 
         {cart.length === 0 ? (
@@ -50,10 +48,11 @@ export default function CartPage() {
                   transition={{ delay: i * 0.1 }}
                   className="bg-white rounded-[24px] p-6 flex flex-col sm:flex-row items-center gap-8 border border-[#e5e5e0] shadow-sm relative group"
                 >
-                  <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center">
-                    <div className="relative pointer-events-none" style={{ width: 300, height: 620, transform: 'scale(0.39)' }}>
-                      <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
-                      <PhoneCaseSVG model={item.phoneModel} bgColor="#fdfdfc" />
+                  <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center relative">
+                    <div className="relative transform scale-[0.4]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
+                      <PhoneCaseMask model={item.phoneModel}>
+                        <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
+                      </PhoneCaseMask>
                     </div>
                   </div>
                   
@@ -68,7 +67,7 @@ export default function CartPage() {
                          </h3>
                        </div>
                        <span className="text-xl font-bold text-[#0A0A0A]">
-                         ${item.price.toFixed(2)}
+                         {item.price.toFixed(2)} TND
                        </span>
                     </div>
 
@@ -98,21 +97,21 @@ export default function CartPage() {
                 <div className="space-y-4 text-sm mb-6 pb-6 border-b border-[#222]">
                   <div className="flex justify-between text-gray-400">
                      <span>Subtotal</span>
-                     <span>${subtotal.toFixed(2)}</span>
+                     <span>{subtotal.toFixed(2)} TND</span>
                   </div>
                   <div className="flex justify-between text-gray-400">
                      <span>Shipping</span>
-                     <span>${shipping.toFixed(2)}</span>
+                     <span>{shipping.toFixed(2)} TND</span>
                   </div>
                   <div className="flex justify-between text-gray-400">
                      <span>Taxes (8%)</span>
-                     <span>${tax.toFixed(2)}</span>
+                     <span>{tax.toFixed(2)} TND</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-end mb-10">
                   <span className="text-sm text-gray-300 font-bold uppercase tracking-widest">Total</span>
-                  <span className="text-4xl font-bebas text-[#C6FF00]">${total.toFixed(2)}</span>
+                  <span className="text-4xl font-bebas text-[#C6FF00]">{total.toFixed(2)} TND</span>
                 </div>
 
                 <Link

@@ -5,7 +5,7 @@ import { ThumbsUp, Medal, Trophy, Star } from "lucide-react";
 import { motion } from "framer-motion";
 
 import dynamic from "next/dynamic";
-const PhoneCaseSVG = dynamic(() => import("@/customizer/PhoneCaseSVG"), { ssr: false });
+import PhoneCaseMask from "@/common/PhoneCaseMask";
 
 export default function CommunityPage() {
   const { communityVault, upvoteDesign } = useCustomizerStore();
@@ -45,9 +45,10 @@ export default function CommunityPage() {
 
       <div className="w-[160px] h-[330px] bg-[#fdfdfc] rounded-[24px] overflow-hidden flex items-center justify-center relative shadow-inner mt-8 border border-[#f0f0f0] shrink-0">
         {item.previewImage ? (
-           <div className="relative pointer-events-none group-hover:scale-105 transition-transform duration-500" style={{ width: 300, height: 620, transform: 'scale(0.52)' }}>
-             <img src={item.previewImage} alt="case" className="absolute inset-0 w-full h-full object-fill drop-shadow-xl" />
-             <PhoneCaseSVG model={item.phoneModel} bgColor="#fdfdfc" />
+           <div className="relative pointer-events-none group-hover:scale-105 transition-transform duration-500 transform scale-[0.52]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
+             <PhoneCaseMask model={item.phoneModel}>
+               <img src={item.previewImage} alt="case" className="absolute inset-0 w-full h-full object-fill drop-shadow-xl" />
+             </PhoneCaseMask>
            </div>
         ) : (
            <div className="w-[120px] h-[240px] bg-black rounded-[30px] opacity-10" />
@@ -82,9 +83,9 @@ export default function CommunityPage() {
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-block bg-[#C6FF00] p-4 rounded-full mb-6">
             <Star className="w-12 h-12 text-[#0A0A0A]" />
           </motion.div>
-          <h1 className="text-7xl font-bebas tracking-wider text-[#0A0A0A] mb-4">Forge Community Vault</h1>
+          <h1 className="text-7xl font-bebas tracking-wider text-[#0A0A0A] mb-4">KaJi Community Vault</h1>
           <p className="text-gray-500 max-w-lg mx-auto uppercase tracking-widest text-xs font-bold leading-relaxed">
-            Rate custom designs created by others. The top 3 master forgemen of the week exclusively win CaseForge discount Vouchers!
+            Rate custom designs created by others. The top 3 master forgemen of the week exclusively win KaJi discount Vouchers!
           </p>
         </div>
 

@@ -17,19 +17,22 @@ export default function Navbar() {
     <nav className={`sticky top-0 z-50 w-full border-b backdrop-blur-[20px] transition-colors ${isDark ? 'border-[#222] bg-[rgba(15,15,17,0.85)]' : 'border-brand-black/10 bg-brand-white/80'}`}>
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-3">
+          <div className={`w-10 h-10 flex items-center justify-center rounded-[10px] ${isDark ? 'bg-[#C6FF00] text-black' : 'bg-black text-[#C6FF00]'} shadow-[0_4px_20px_rgba(198,255,0,0.2)]`}>
+            <span className="font-bebas text-2xl tracking-tighter leading-none mt-1 pl-0.5">KJ</span>
+          </div>
           {!ecoMode ? (
             <motion.div
-              whileHover={{ rotate: 5, scale: 1.05 }}
+              whileHover={{ rotate: 2, scale: 1.02 }}
               transition={{ type: "spring", stiffness: 300, damping: 10 }}
             >
-              <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'}`}>
-                CaseForge
+              <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'} hidden sm:block pt-1`}>
+                KaJi
               </h1>
             </motion.div>
           ) : (
-            <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'}`}>
-              CaseForge
+            <h1 className={`text-3xl font-bold tracking-wider font-bebas uppercase ${isDark ? 'text-white' : 'text-brand-black'} hidden sm:block pt-1`}>
+              KaJi
             </h1>
           )}
         </Link>

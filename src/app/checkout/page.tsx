@@ -102,14 +102,14 @@ export default function CheckoutPage() {
                      <p className="font-bebas text-lg tracking-wider">{item.designName}</p>
                      <p className="text-xs text-gray-500 font-bold tracking-widest">{item.phoneModel}</p>
                    </div>
-                   <div className="ml-auto font-bold">${item.price.toFixed(2)}</div>
+                   <div className="ml-auto font-bold">{item.price.toFixed(2)} TND</div>
                  </div>
                ))}
              </div>
 
              <div className="flex justify-between items-center mb-8 border-t border-[#dcdcc9] pt-6">
                 <span className="text-xl font-bold uppercase tracking-widest text-gray-500">Total</span>
-                <span className="text-4xl font-bebas text-[#0A0A0A]">${total.toFixed(2)}</span>
+                <span className="text-4xl font-bebas text-[#0A0A0A]">{total.toFixed(2)} TND</span>
              </div>
 
              <button 
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
                 {isProcessing ? (
                   <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  "Place Order & Forge"
+                  "Place KaJi Order"
                 )}
              </button>
              <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-widest">Mock Checkout Process</p>
@@ -142,10 +142,10 @@ export default function CheckoutPage() {
                <CheckCircle className="w-20 h-20 text-[#C6FF00] mx-auto mb-6 drop-shadow-[0_0_15px_rgba(198,255,0,0.5)]" />
                <h2 className="text-5xl font-bebas text-white tracking-wider mb-2">Order Confirmed!</h2>
                <p className="text-gray-400 text-sm mb-10 max-w-sm mx-auto">
-                 Your masterpieces are entering the physical forge. 
+                 Your masterpieces are entering the physical KaJi production line. 
                  <br/><br/>
-                 <strong className="text-white text-base">Earn $50 Vouchers!</strong><br/>
-                 Do you want to publish your designs to the <span className="text-[#C6FF00]">Community Vault</span> and compete to be the most liked cage of the week?
+                 <strong className="text-white text-base">Earn 50 TND Vouchers!</strong><br/>
+                 Do you want to publish your designs to the <span className="text-[#C6FF00]">Community Vault</span> and compete to be the most liked case this week?
                </p>
 
                <div className="grid sm:grid-cols-2 gap-4">
