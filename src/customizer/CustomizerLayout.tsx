@@ -10,6 +10,7 @@ const PhoneModel3D = dynamic(() => import("./PhoneModel3D"), { ssr: false });
 const ToolsPanel = dynamic(() => import("./ToolsPanel"), { ssr: false });
 const LayerManager = dynamic(() => import("./LayerManager"), { ssr: false });
 const PhoneCaseSVG = dynamic(() => import("./PhoneCaseSVG"), { ssr: false });
+import { DEVICE_METRICS } from "./PhoneCaseSVG";
 
 const MODELS = ['iPhone 15 Pro', 'iPhone 14', 'Samsung S24 Ultra', 'Pixel 8 Pro', 'OnePlus 12', 'Xiaomi 14'];
 
@@ -164,7 +165,7 @@ export default function CustomizerLayout() {
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  borderRadius: 42,
+                  borderRadius: DEVICE_METRICS[phoneModel]?.rx ?? 42,
                   overflow: 'hidden',
                   zIndex: 10,
                 }}
@@ -187,7 +188,7 @@ export default function CustomizerLayout() {
             </div>
 
             <div className="flex-1 min-h-[480px]">
-              <PhoneModel3D canvasEl={fabricApi.canvasRef.current} />
+              <PhoneModel3D canvasEl={fabricApi.canvasRef.current} model={phoneModel} />
             </div>
 
             <div className="flex justify-between items-center bg-[#1a1a1e] mt-4 p-1.5 rounded-full border border-[#333]">

@@ -1,11 +1,20 @@
 "use client";
 
 import { useMemo, useRef, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, Environment, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
+import { DEVICE_METRICS } from "./PhoneCaseSVG";
 
-function MeshLink({ canvasEl }: { canvasEl: HTMLCanvasElement }) {
+function SceneSetup() {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.background = new THREE.Color("#0d0d14");
+  }, [scene]);
+  return null;
+}
+
+function MeshLink({ canvasEl, model }: { canvasEl: HTMLCanvasElement, model: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const interacting = useRef(false);
@@ -45,38 +54,55 @@ function MeshLink({ canvasEl }: { canvasEl: HTMLCanvasElement }) {
     return () => window.removeEventListener('fabric-sync', handleTextureSync);
   }, []);
 
+  const metrics = DEVICE_METRICS[model] || DEVICE_METRICS['iPhone 15 Pro'];
+  const cornerRadius = (metrics.rx / 300) * 1.5;
+
   return (
-    <mesh 
-      ref={meshRef} 
-      material={materials}
-      castShadow 
-      receiveShadow
-      onPointerDown={() => {
-        interacting.current = true;
-        if (interactionTimer.current) clearTimeout(interactionTimer.current);
-      }}
-      onPointerUp={() => {
-        interactionTimer.current = setTimeout(() => {
-          interacting.current = false;
-        }, 3000);
-      }}
-    >
-      <boxGeometry args={[1.5, 3.0, 0.12]} />
-    </mesh>
+    <>
+      <RoundedBox 
+        ref={meshRef as any}
+        args={[1.5, 3.1, 0.12]}
+        radius={cornerRadius}
+        smoothness={4}
+        material={materials as any}
+        castShadow 
+        receiveShadow
+        onPointerDown={() => {
+          interacting.current = true;
+          if (interactionTimer.current) clearTimeout(interactionTimer.current);
+        }}
+        onPointerUp={() => {
+          interactionTimer.current = setTimeout(() => {
+            interacting.current = false;
+          }, 3000);
+        }}
+      />
+      
+      {/* Subtle floor grid */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <meshStandardMaterial color="#222" transparent opacity={0.15} wireframe />
+      </mesh>
+    </>
   );
 }
 
-export default function PhoneModel3D({ canvasEl }: { canvasEl: HTMLCanvasElement | null }) {
-  if (!canvasEl) return <div className="w-full h-[600px] bg-[#161616] animate-pulse rounded-xl" />;
+export default function PhoneModel3D({ canvasEl, model }: { canvasEl: HTMLCanvasElement | null, model: string }) {
+  if (!canvasEl) return <div className="w-full h-full bg-[#161616] animate-pulse rounded-xl" />;
 
   return (
-    <div className="w-full h-[600px] bg-[#0D0D0D] rounded-xl overflow-hidden relative shadow-2xl border border-[#2A2A2A]">
+    <div className="w-full h-full bg-[#0d0d14] rounded-xl overflow-hidden relative shadow-inner border border-[#2a2a2e]">
       <Canvas camera={{ position: [0, 0, 4.5], fov: 50 }} shadows dpr={[1, 2]}>
-        <ambientLight intensity={0.5} />
+        <SceneSetup />
+        <ambientLight intensity={0.4} />
         <spotLight position={[5, 10, 5]} intensity={1.5} castShadow />
-        <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#C6FF00" />
+        <directionalLight position={[-5, 5, -5]} intensity={0.3} color="#ffffff" />
+        
+        {/* Lime reflection bounce light below */}
+        <pointLight position={[0, -2, 0]} intensity={0.3} color="#C6FF00" />
+        
         <Environment preset="studio" />
-        <MeshLink canvasEl={canvasEl} />
+        <MeshLink canvasEl={canvasEl} model={model} />
         <OrbitControls enableZoom={true} maxPolarAngle={Math.PI / 1.5} minPolarAngle={Math.PI / 3} />
       </Canvas>
     </div>
