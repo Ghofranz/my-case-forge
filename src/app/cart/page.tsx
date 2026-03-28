@@ -4,6 +4,9 @@ import { useCustomizerStore } from "@/store/useCustomizerStore";
 import { Trash2, ArrowRight, ShoppingBag, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const PhoneCaseSVG = dynamic(() => import("@/customizer/PhoneCaseSVG"), { ssr: false });
 
 export default function CartPage() {
   const { cart, removeFromCart } = useCustomizerStore();
@@ -47,8 +50,11 @@ export default function CartPage() {
                   transition={{ delay: i * 0.1 }}
                   className="bg-white rounded-[24px] p-6 flex flex-col sm:flex-row items-center gap-8 border border-[#e5e5e0] shadow-sm relative group"
                 >
-                  <div className="w-32 h-64 bg-[#f0f0ea] rounded-xl overflow-hidden shadow-inner shrink-0 relative flex items-center justify-center">
-                    <img src={item.previewImage} alt={item.designName} className="object-contain h-[90%] w-[90%]" />
+                  <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center">
+                    <div className="relative pointer-events-none" style={{ width: 300, height: 620, transform: 'scale(0.39)' }}>
+                      <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
+                      <PhoneCaseSVG model={item.phoneModel} bgColor="#fdfdfc" />
+                    </div>
                   </div>
                   
                   <div className="flex-1 flex flex-col w-full">

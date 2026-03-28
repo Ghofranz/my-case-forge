@@ -39,7 +39,7 @@ export const DEVICE_METRICS: Record<string, { w: number; h: number; rx: number; 
   },
 };
 
-export default function PhoneCaseSVG({ model }: { model?: string }) {
+export default function PhoneCaseSVG({ model, bgColor = "#FDFDFD" }: { model?: string, bgColor?: string }) {
   const metrics = DEVICE_METRICS[model || 'iPhone 15 Pro'] || DEVICE_METRICS['iPhone 15 Pro'];
   const { w, h, rx, camera } = metrics;
 
@@ -91,7 +91,7 @@ export default function PhoneCaseSVG({ model }: { model?: string }) {
           A ${rx} ${rx} 0 0 0 ${w - rx} 0
           Z
         `}
-        fill="#F8F8F8" 
+        fill={bgColor} 
         fillRule="evenodd"
       />
 

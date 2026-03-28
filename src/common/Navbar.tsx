@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { Leaf, Battery, ShoppingCart } from "lucide-react";
 import { useEcoStore } from "../store/ecoStore";
+import { useCustomizerStore } from "../store/useCustomizerStore";
 import { motion } from "framer-motion";
 import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const { ecoMode, toggleEcoMode } = useEcoStore();
+  const { cart } = useCustomizerStore();
   const pathname = usePathname();
   const isDark = pathname === '/customizer';
 
@@ -61,12 +63,12 @@ export default function Navbar() {
             <span className="hidden sm:inline">{ecoMode ? "Eco-Mode" : "Eco-Mode"}</span>
           </button>
           
-          <button className={`relative rounded-full p-2 transition-colors ${isDark ? 'text-white hover:bg-[#1e1e22]' : 'text-brand-black hover:bg-brand-black/5'}`}>
+          <Link href="/cart" className={`relative rounded-full p-2 transition-colors ${isDark ? 'text-white hover:bg-[#1e1e22]' : 'text-brand-black hover:bg-brand-black/5'}`}>
             <ShoppingCart className="h-5 w-5" />
-            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#C6FF00] text-[10px] font-bold text-black border-2 border-[rgba(15,15,17,0.85)]">
-              0
+            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#C6FF00] text-[10px] font-bold text-black border-2 border-[rgba(15,15,17,0.85)] font-sans">
+              {cart.length}
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </nav>

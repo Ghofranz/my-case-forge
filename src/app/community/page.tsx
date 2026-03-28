@@ -4,6 +4,9 @@ import { useCustomizerStore } from "@/store/useCustomizerStore";
 import { ThumbsUp, Medal, Trophy, Star } from "lucide-react";
 import { motion } from "framer-motion";
 
+import dynamic from "next/dynamic";
+const PhoneCaseSVG = dynamic(() => import("@/customizer/PhoneCaseSVG"), { ssr: false });
+
 export default function CommunityPage() {
   const { communityVault, upvoteDesign } = useCustomizerStore();
 
@@ -25,24 +28,27 @@ export default function CommunityPage() {
 
       {/* Ribbon */}
       {rank === 1 && (
-        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-[#C6FF00] px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1">
+        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-[#C6FF00] px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 z-10">
           <Trophy className="w-3 h-3" /> $50 Voucher Winner
         </div>
       )}
       {rank === 2 && (
-        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1">
+        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 z-10">
           <Medal className="w-3 h-3" /> $20 Voucher
         </div>
       )}
       {rank === 3 && (
-        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-gray-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1">
+        <div className="absolute top-4 left-4 bg-[#0A0A0A] text-gray-400 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 z-10">
           <Medal className="w-3 h-3" /> $10 Voucher
         </div>
       )}
 
-      <div className="w-48 h-80 bg-[#f4f4f0] rounded-[32px] overflow-hidden flex items-center justify-center p-4 mt-8 relative shadow-inner">
+      <div className="w-[160px] h-[330px] bg-[#fdfdfc] rounded-[24px] overflow-hidden flex items-center justify-center relative shadow-inner mt-8 border border-[#f0f0f0] shrink-0">
         {item.previewImage ? (
-           <img src={item.previewImage} alt="case" className="object-contain h-full w-full drop-shadow-xl hover:scale-105 transition-transform duration-500" />
+           <div className="relative pointer-events-none group-hover:scale-105 transition-transform duration-500" style={{ width: 300, height: 620, transform: 'scale(0.52)' }}>
+             <img src={item.previewImage} alt="case" className="absolute inset-0 w-full h-full object-fill drop-shadow-xl" />
+             <PhoneCaseSVG model={item.phoneModel} bgColor="#fdfdfc" />
+           </div>
         ) : (
            <div className="w-[120px] h-[240px] bg-black rounded-[30px] opacity-10" />
         )}

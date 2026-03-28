@@ -78,9 +78,9 @@ export const useCustomizerStore = create<CustomizerState>((set) => ({
 
   // Vault Logic (Seed with some competitive hype data)
   communityVault: [
-    { id: '1', phoneModel: 'iPhone 15 Pro', designName: 'Cyber Demon', previewImage: '', likes: 1420, author: 'AlexZ', isPublic: true },
-    { id: '2', phoneModel: 'Samsung S24 Ultra', designName: 'Pastel Sunrise', previewImage: '', likes: 934, author: 'SarahM', isPublic: true },
-    { id: '3', phoneModel: 'Pixel 8 Pro', designName: 'Vaporwave Grid', previewImage: '', likes: 2150, author: 'NeoTokyo', isPublic: true },
+    { id: '1', phoneModel: 'iPhone 15 Pro', designName: 'Cyber Demon', previewImage: '/cyber_demon.png', likes: 1420, author: 'AlexZ', isPublic: true },
+    { id: '2', phoneModel: 'Samsung S24 Ultra', designName: 'Pastel Sunrise', previewImage: '/pastel_sunrise.png', likes: 934, author: 'SarahM', isPublic: true },
+    { id: '3', phoneModel: 'Pixel 8 Pro', designName: 'Vaporwave Grid', previewImage: '/vaporwave_grid.png', likes: 2150, author: 'NeoTokyo', isPublic: true },
   ],
   publishToVault: (design) => set((state) => ({ communityVault: [design, ...state.communityVault] })),
   upvoteDesign: (id) => set((state) => ({
