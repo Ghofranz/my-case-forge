@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomizerStore } from '../store/useCustomizerStore';
 import { useFabric } from "./useFabric";
-import { ChevronDown, Smartphone, Undo2, Redo2, Trash2, Camera } from 'lucide-react';
+import { ChevronDown, Smartphone, Undo2, Redo2, Trash2, Camera, Check } from 'lucide-react';
 
 const PhoneModel3D = dynamic(() => import("./PhoneModel3D"), { ssr: false });
 const ToolsPanel = dynamic(() => import("./ToolsPanel"), { ssr: false });
@@ -19,8 +19,13 @@ export default function CustomizerLayout() {
   const [mounted, setMounted] = useState(false);
   const fabricApi = useFabric(mounted);
   const { phoneModel, setPhoneModel, canUndo, canRedo } = useCustomizerStore();
+  
   const [modelDropdown, setModelDropdown] = useState(false);
   const [designName, setDesignName] = useState("Untitled Design");
+  
+  // Interactive Button States
+  const [lighting, setLighting] = useState<'studio' | 'city' | 'sunset'>('studio');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -31,6 +36,22 @@ export default function CustomizerLayout() {
     };
     return () => { console.warn = originalWarn; };
   }, []);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const capture3D = () => {
+    const canvas = document.querySelector('.render-3d-canvas canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const dataURL = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = `3d-render-${designName.replace(/\s+/g, '-').toLowerCase()}.png`;
+    a.click();
+    triggerToast("3D Render Successfully Captured!");
+  };
 
   if (!mounted) {
     return (
@@ -58,9 +79,10 @@ export default function CustomizerLayout() {
         }}
       />
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-[1700px] mx-auto items-stretch justify-center pt-8 pb-[120px] px-6 z-10">
+      {/* Increased bottom padding to accommodate for the higher floating action bar */}
+      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-[1700px] mx-auto items-stretch justify-center pt-8 pb-[180px] px-6 z-10">
 
-        {/* ── LEFT PANEL : Animations Added ── */}
+        {/* ── LEFT PANEL ── */}
         <motion.div 
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -97,7 +119,7 @@ export default function CustomizerLayout() {
                   {MODELS.map((m) => (
                     <button
                       key={m}
-                      onClick={() => { setPhoneModel(m); setModelDropdown(false); }}
+                      onClick={() => { setPhoneModel(m); setModelDropdown(false); triggerToast(`Canvas scaled to ${m}`); }}
                       className={`w-full flex items-center gap-3 p-4 text-xs font-bold uppercase transition-colors text-left ${
                         phoneModel === m
                           ? 'bg-[#F2F2F2] text-[#0A0A0A] border-l-4 border-[#C6FF00]'
@@ -129,7 +151,7 @@ export default function CustomizerLayout() {
             <div className="flex items-center gap-4">
               <div className="flex items-center bg-[#f9f9f9] p-1.5 rounded-xl border border-[#eeeeee]">
                 <button
-                  onClick={fabricApi.undo}
+                  onClick={() => { fabricApi.undo(); triggerToast("Restored History (Undo)"); }}
                   disabled={!canUndo}
                   className="p-2 text-gray-500 hover:text-black hover:bg-white hover:shadow-sm rounded-lg disabled:opacity-30 transition-all font-bold"
                   title="Undo"
@@ -138,7 +160,7 @@ export default function CustomizerLayout() {
                 </button>
                 <div className="w-[1px] h-4 bg-[#e0e0e0] mx-1" />
                 <button
-                  onClick={fabricApi.redo}
+                  onClick={() => { fabricApi.redo(); triggerToast("Advanced History (Redo)"); }}
                   disabled={!canRedo}
                   className="p-2 text-gray-500 hover:text-black hover:bg-white hover:shadow-sm rounded-lg disabled:opacity-30 transition-all font-bold"
                   title="Redo"
@@ -152,6 +174,7 @@ export default function CustomizerLayout() {
                   onClick={() => {
                     fabricApi.fabricRef.current?.clear();
                     fabricApi.setBackgroundColor('#EFEFEF');
+                    triggerToast("Workspace Erased");
                   }}
                   className="p-2 text-gray-500 hover:text-[#ff3333] hover:bg-[#ff3333]/10 hover:border-[#ff3333]/20 rounded-lg transition-all"
                   title="Clear Canvas"
@@ -220,36 +243,39 @@ export default function CustomizerLayout() {
             </div>
 
             <div className="flex-1 min-h-[480px]">
-              <PhoneModel3D canvasEl={fabricApi.canvasRef.current} model={phoneModel} />
+              <PhoneModel3D canvasEl={fabricApi.canvasRef.current} model={phoneModel} lighting={lighting} />
             </div>
 
             <div className="flex justify-between items-center bg-[#f9f9f9] mt-5 p-1.5 rounded-full border border-[#eee]">
-              <button className="flex-1 text-[9px] font-bold tracking-widest text-[#000] bg-[#C6FF00] py-2.5 rounded-full uppercase shadow-sm">
-                Studio
-              </button>
-              <button className="flex-1 text-[9px] font-bold tracking-widest text-[#888] hover:text-[#000] py-2.5 rounded-full uppercase transition-colors">
-                Soft
-              </button>
-              <button className="flex-1 text-[9px] font-bold tracking-widest text-[#888] hover:text-[#000] py-2.5 rounded-full uppercase transition-colors">
-                Warm
-              </button>
+              {(['studio', 'city', 'sunset'] as const).map((l) => (
+                <button 
+                  key={l}
+                  onClick={() => { setLighting(l); triggerToast(\`Lighting set to \${l}\`); }}
+                  className={\`flex-1 text-[9px] font-bold tracking-widest py-2.5 rounded-full uppercase transition-all \${lighting === l ? 'bg-[#C6FF00] text-[#000] shadow-sm scale-105' : 'text-[#888] hover:text-[#000]'}\`}
+                >
+                  {l === 'city' ? 'Soft' : l}
+                </button>
+              ))}
             </div>
 
-            <button className="w-full mt-3 py-3.5 bg-white hover:bg-[#F9F9F9] text-[#0A0A0A] hover:text-[#C6FF00] border border-[#eee] hover:border-[#ddd] text-[10px] tracking-[0.15em] font-bold uppercase rounded-[14px] transition-all flex justify-center items-center gap-2 shadow-sm">
+            <button 
+              onClick={capture3D}
+              className="w-full mt-3 py-3.5 bg-white hover:bg-[#F9F9F9] text-[#0A0A0A] hover:text-[#C6FF00] hover:border-[#C6FF00] border border-[#eee] text-[10px] tracking-[0.15em] font-bold uppercase rounded-[14px] transition-all flex justify-center items-center gap-2 shadow-sm"
+            >
               📸 Screenshot Render
             </button>
           </div>
         </motion.div>
       </div>
 
-      {/* ── BOTTOM BAR Floating Light Style ── */}
+      {/* ── BOTTOM BAR Elevated Action Space ── */}
       <motion.div 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 150 }}
-        className="fixed bottom-6 left-0 w-full flex items-center justify-center z-50 pointer-events-none px-6"
+        className="fixed bottom-12 left-0 w-full flex items-center justify-center z-50 pointer-events-none px-6"
       >
-        <div className="w-full max-w-[1200px] bg-white/90 backdrop-blur-xl border border-[#e5e5e0] shadow-[0_20px_60px_rgba(0,0,0,0.08)] rounded-[24px] mx-auto flex items-center justify-between pointer-events-auto p-4 gap-4">
+        <div className="w-full max-w-[1200px] bg-white/90 backdrop-blur-xl border border-[#e5e5e0] shadow-[0_30px_60px_rgba(0,0,0,0.12)] rounded-[24px] mx-auto flex items-center justify-between pointer-events-auto p-4 gap-4">
           <div className="hidden lg:flex items-center gap-3 px-4 w-1/3">
             <input
               type="text"
@@ -269,7 +295,10 @@ export default function CustomizerLayout() {
           </div>
 
           <div className="flex items-center gap-3 justify-end w-2/3 pr-2">
-            <button className="hidden lg:block px-6 py-3 border border-[#eee] text-[#666] font-bold uppercase text-[10px] tracking-widest rounded-full hover:bg-[#f9f9f9] hover:text-[#000] transition-colors bg-white shadow-sm">
+            <button 
+              onClick={() => triggerToast("Design Linked to your Account Vault!")}
+              className="hidden lg:block px-6 py-3 border border-[#eee] text-[#666] font-bold uppercase text-[10px] tracking-widest rounded-full hover:bg-[#f9f9f9] hover:text-[#000] transition-colors bg-white shadow-sm"
+            >
               💾 Save to Account
             </button>
             <button
@@ -278,19 +307,41 @@ export default function CustomizerLayout() {
                 if (!dataURL) return;
                 const a = document.createElement('a');
                 a.href = dataURL;
-                a.download = `${designName}.png`;
+                a.download = \`\${designName.replace(/\\s+/g, '-').toLowerCase()}-flat.png\`;
                 a.click();
+                triggerToast("2D Design Captured to PNG");
               }}
               className="hidden lg:block px-6 py-3 border border-[#eee] text-[#666] font-bold uppercase text-[10px] tracking-widest rounded-full hover:bg-[#C6FF00] hover:text-[#0A0A0A] hover:border-[#C6FF00] transition-all bg-white shadow-sm"
             >
               ⬇ Download PNG
             </button>
-            <button className="px-8 py-3.5 bg-[#0A0A0A] text-[#C6FF00] font-bold uppercase text-xs rounded-full shadow-[0_5px_15px_rgba(0,0,0,0.2)] hover:scale-[1.03] hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] transition-all tracking-widest flex items-center gap-2">
+            <button 
+              onClick={() => triggerToast("Sent to Cart for Production!")}
+              className="px-8 py-3.5 bg-[#0A0A0A] text-[#C6FF00] font-bold uppercase text-xs rounded-full shadow-[0_5px_15px_rgba(0,0,0,0.2)] hover:scale-[1.03] hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] transition-all tracking-widest flex items-center gap-2"
+            >
               🛒 Add to Cart · $34.99
             </button>
           </div>
         </div>
       </motion.div>
+
+      {/* Floating Application Toast Event System */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] bg-[#0A0A0A] text-white px-6 py-3 rounded-[12px] shadow-2xl flex items-center gap-3"
+          >
+            <div className="bg-[#C6FF00] rounded-full p-1 border-2 border-[#0A0A0A]">
+              <Check className="w-3 h-3 text-[#000] stroke-[3]" />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest">{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
