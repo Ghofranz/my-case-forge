@@ -5,13 +5,33 @@ import ProductFilters from "./ProductFilters";
 import ProductCard from "./ProductCard";
 import { MOCK_CASES } from "./mockData";
 
-export default function ProductGrid() {
+interface ProductGridProps {
+  searchQuery?: string;
+}
+
+export default function ProductGrid({ searchQuery = "" }: ProductGridProps) {
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredCases = useMemo(() => {
-    if (activeFilter === "All") return MOCK_CASES;
-    return MOCK_CASES.filter((c) => c.supportedModels.includes(activeFilter));
-  }, [activeFilter]);
+    let cases = MOCK_CASES;
+    
+    // Filter by phone model
+    if (activeFilter !== "All") {
+      cases = cases.filter((c) => c.supportedModels.includes(activeFilter));
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      cases = cases.filter((c) => 
+        c.name.toLowerCase().includes(query) ||
+        c.description.toLowerCase().includes(query) ||
+        c.supportedModels.some(m => m.toLowerCase().includes(query))
+      );
+    }
+    
+    return cases;
+  }, [activeFilter, searchQuery]);
 
   return (
     <div className="w-full">
