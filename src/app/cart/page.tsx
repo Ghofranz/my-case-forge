@@ -48,19 +48,38 @@ export default function CartPage() {
                   transition={{ delay: i * 0.1 }}
                   className="bg-white rounded-[24px] p-6 flex flex-col sm:flex-row items-center gap-8 border border-[#e5e5e0] shadow-sm relative group"
                 >
-                  <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center relative">
-                    {item.isPremium ? (
-                      <div className="w-full h-full py-2 bg-gradient-to-br from-[#f8f8f8] to-[#ebebe6] flex items-center justify-center relative overflow-hidden group-hover:-translate-y-1 transition-transform">
-                        <img src={item.previewImage} alt={item.designName} className="w-[90%] h-full object-contain drop-shadow-xl" />
-                      </div>
-                    ) : (
-                      <div className="relative transform scale-[0.4]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
-                        <PhoneCaseMask model={item.phoneModel}>
-                          <img src={item.previewImage} alt={item.designName} className="absolute inset-0 w-full h-full object-fill" />
-                        </PhoneCaseMask>
-                      </div>
-                    )}
-                  </div>
+                <div className="w-[124px] h-[254px] bg-[#fdfdfc] rounded-[16px] border border-[#f0f0f0] overflow-hidden shadow-sm shrink-0 flex items-center justify-center relative">
+  {item.isPremium ? (
+    <div className="w-full h-full p-2 flex items-center justify-center group-hover:-translate-y-1 transition-transform">
+      <img 
+        src={item.previewImage} 
+        alt={item.designName} 
+        className="w-full h-full object-contain drop-shadow-xl" 
+      />
+    </div>
+  ) : (
+    /* Container to center and scale the mask */
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <div 
+        className="flex items-center justify-center transition-transform group-hover:scale-[0.42]"
+        style={{ 
+          transform: 'scale(0.38)', // Adjusted scale to fit 254px height
+          width: '300px', 
+          height: '620px',
+          flexShrink: 0
+        }}
+      >
+        <PhoneCaseMask model={item.phoneModel}>
+          <img 
+            src={item.previewImage} 
+            alt={item.designName} 
+            className="absolute inset-0 w-full h-full object-cover" 
+          />
+        </PhoneCaseMask>
+      </div>
+    </div>
+  )}
+</div>
                   
                   <div className="flex-1 flex flex-col w-full">
                     <div className="flex justify-between items-start mb-2">

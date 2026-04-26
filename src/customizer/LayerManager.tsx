@@ -15,24 +15,43 @@ export default function LayerManager({ fabricApi }: { fabricApi: any }) {
     e.preventDefault(); 
   };
 
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
+ const handleDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     const draggedId = e.dataTransfer.getData('layer-id');
-    if (!draggedId || draggedId === targetId || !fabricApi.fabricRef.current) return;
+    
+    // 1. Basic Validation
+    if (!draggedId || draggedId === targetId || !fabricApi?.fabricRef.current) return;
 
     const canvas = fabricApi.fabricRef.current;
     const objects = canvas.getObjects();
+    
     const draggedObj = objects.find((o: any) => o.id === draggedId);
     const targetObj = objects.find((o: any) => o.id === targetId);
 
     if (draggedObj && targetObj) {
-      const draggedZ = objects.indexOf(draggedObj);
+      // 2. Determine the target index
       const targetZ = objects.indexOf(targetObj);
-      draggedObj.moveTo(targetZ);
+
+      // 3. Use the Modern Fabric 6 way OR the fallback
+      if (typeof canvas.moveObjectTo === 'function') {
+        canvas.moveObjectTo(draggedObj, targetZ);
+      } else if (typeof draggedObj.moveTo === 'function') {
+        draggedObj.moveTo(targetZ);
+      } else {
+        // 4. Manual Fallback: Remove and Re-insert (Works in all versions)
+        canvas.remove(draggedObj);
+        canvas.insertAt(draggedObj, targetZ);
+      }
+
       canvas.requestRenderAll();
+      
+      // 5. Update your Zustand store to reflect the new order
+      // (Assuming your store has a reorderLayers method)
+      // if (useCustomizerStore.getState().reorderLayers) {
+      //   useCustomizerStore.getState().reorderLayers(draggedId, targetId);
+      // }
     }
   };
-
   const toggleVisibility = (id: string) => {
     const canvas = fabricApi.fabricRef.current;
     if (!canvas) return;
