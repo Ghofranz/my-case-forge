@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { CaseProduct } from "./mockData";
 import { useEcoStore } from "../store/ecoStore";
@@ -9,7 +10,7 @@ export default function ProductCard({ product }: { product: CaseProduct }) {
   const { ecoMode } = useEcoStore();
 
   const CardContent = (
-    <div className={`group relative flex flex-col gap-3 rounded-2xl p-4 transition-all h-full ${
+    <div className={`group relative flex flex-col gap-3 rounded-2xl p-4 transition-all h-full cursor-pointer ${
       ecoMode ? "border border-brand-black/10" : "bg-white hover:shadow-2xl hover:shadow-brand-lime/20"
     }`}>
       <div className={`relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-brand-white ${
@@ -49,19 +50,21 @@ export default function ProductCard({ product }: { product: CaseProduct }) {
     </div>
   );
 
-  if (!ecoMode) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.5 }}
-        className="h-full"
-      >
-        {CardContent}
-      </motion.div>
-    );
-  }
-
-  return <div className="h-full">{CardContent}</div>;
+  return (
+    <Link href={`/shop/${product.id}`} className="h-full block">
+      {ecoMode ? (
+        CardContent
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          className="h-full"
+        >
+          {CardContent}
+        </motion.div>
+      )}
+    </Link>
+  );
 }

@@ -15,18 +15,19 @@ export default function CommunityPage() {
   const champions = sortedVault.slice(0, 3);
   const gallery = sortedVault.slice(3);
 
-  const renderCase = (item: any, rank?: number) => (
+const renderCase = (item: any, rank?: number) => (
     <motion.div
       key={item.id}
       initial={{ opacity: 0, scale: 0.9 }}
       whileInView={{ opacity: 1, scale: 1 }}
-      className={`bg-white rounded-[24px] border ${rank ? 'border-[#C6FF00] shadow-[0_10px_40px_rgba(198,255,0,0.1)]' : 'border-[#e5e5e0] shadow-sm'} p-6 flex flex-col items-center relative gap-4 overflow-hidden group hover:shadow-xl transition-shadow`}
+      viewport={{ once: true }}
+      className={`bg-white rounded-[24px] border ${rank ? 'border-[#C6FF00] shadow-[0_10px_40px_rgba(198,255,0,0.1)]' : 'border-[#e5e5e0] shadow-sm'} p-6 flex flex-col items-center relative gap-4 overflow-hidden group hover:shadow-xl transition-all duration-300`}
     >
       {rank && (
          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#C6FF00] to-[#00E5FF]" />
       )}
 
-      {/* Ribbon */}
+      {/* Rewards Ribbons */}
       {rank === 1 && (
         <div className="absolute top-4 left-4 bg-[#0A0A0A] text-[#C6FF00] px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 z-10">
           <Trophy className="w-3 h-3" /> $50 Voucher Winner
@@ -43,39 +44,60 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <div className={`w-[160px] h-[330px] rounded-[24px] overflow-hidden flex items-center justify-center relative mt-8 shrink-0 ${item.isPremium ? 'bg-transparent shadow-none' : 'bg-[#fdfdfc] border border-[#f0f0f0] shadow-inner'}`}>
+      {/* Image Display Container - FIXED HEIGHT LOGIC */}
+      <div className={`w-full h-[280px] rounded-[24px] overflow-hidden flex items-center justify-center relative mt-6 shrink-0 ${item.isPremium ? 'bg-transparent' : 'bg-[#fdfdfc] border border-[#f0f0f0] shadow-inner'}`}>
         {item.isPremium && item.previewImage ? (
-           <img src={item.previewImage} alt="case" className="w-[85%] h-full object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.2)] group-hover:scale-110 group-hover:-translate-y-3 transition-transform duration-500" />
+           <img 
+            src={item.previewImage} 
+            alt="case" 
+            className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500" 
+           />
         ) : item.previewImage ? (
-           <div className="relative pointer-events-none group-hover:scale-105 transition-transform duration-500 transform scale-[0.52]" style={{ width: 300, height: 620, transformOrigin: 'center' }}>
-             <PhoneCaseMask model={item.phoneModel}>
-               <img src={item.previewImage} alt="case" className="absolute inset-0 w-full h-full object-fill drop-shadow-xl" />
-             </PhoneCaseMask>
+           /* Standardize the mask scaling so it doesn't create empty space */
+           <div className="relative flex items-center justify-center w-full h-full">
+             <div 
+               className="flex-shrink-0 transition-transform duration-500 group-hover:scale-[0.48]" 
+               style={{ 
+                 width: 300, 
+                 height: 620, 
+                 transform: 'scale(0.45)', // Fits perfectly in 280px height
+                 transformOrigin: 'center center'
+               }}
+             >
+               <PhoneCaseMask model={item.phoneModel}>
+                 <img 
+                   src={item.previewImage} 
+                   alt="case" 
+                   className="absolute inset-0 w-full h-full object-cover" 
+                 />
+               </PhoneCaseMask>
+             </div>
            </div>
         ) : (
            <div className="w-[120px] h-[240px] bg-black rounded-[30px] opacity-10" />
         )}
       </div>
 
-      <div className="w-full mt-4 flex justify-between items-end">
-         <div className="flex flex-col">
+      {/* Content Section */}
+      <div className="w-full mt-2 flex justify-between items-end">
+         <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#888]">{item.phoneModel}</span>
-            <span className="text-2xl font-bebas text-[#0A0A0A] tracking-wider">{item.designName}</span>
-            <span className="text-xs text-black font-bold mt-1">
-               By <span className="text-[#C6FF00] bg-black px-2 py-0.5 rounded-sm">{item.author}</span>
-            </span>
+            <span className="text-xl font-bebas text-[#0A0A0A] tracking-wider truncate block">{item.designName}</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[9px] text-gray-400 font-bold uppercase">Artist</span>
+              <span className="text-[10px] text-[#C6FF00] bg-black px-2 py-0.5 rounded-sm font-bold">{item.author}</span>
+            </div>
          </div>
          <button 
            onClick={() => upvoteDesign(item.id)}
-           className="bg-[#F5F5F0] hover:bg-[#C6FF00] border border-[#eee] hover:border-[#C6FF00] p-4 text-[#000] rounded-[16px] flex flex-col items-center justify-center transition-colors group/upvote"
+           className="bg-[#F5F5F0] hover:bg-[#C6FF00] border border-[#eee] hover:border-[#C6FF00] px-3 py-2 text-[#000] rounded-[12px] flex flex-col items-center justify-center transition-all group/upvote active:scale-95"
          >
-           <ThumbsUp className="w-5 h-5 mb-1 group-hover/upvote:scale-110 transition-transform" />
-           <span className="text-sm font-bebas tracking-wide">{item.likes}</span>
+           <ThumbsUp className="w-4 h-4 mb-0.5 group-hover/upvote:scale-110 transition-transform" />
+           <span className="text-[12px] font-bebas tracking-wide leading-none">{item.likes}</span>
          </button>
       </div>
     </motion.div>
   );
-
   return (
     <div className="min-h-screen bg-[#F5F5F0] pt-24 pb-32">
       <div className="max-w-7xl mx-auto px-6">
